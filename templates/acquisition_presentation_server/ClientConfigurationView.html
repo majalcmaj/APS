@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Konfiguracja Klineta</title>
+</head>
+<body>
+<h1>Konfiguracja klienta</h1>
+<form method="post" action="{%  url 'aps:ApplyClientConfiguration' %}">
+    {% csrf_token %}
+    <input type="hidden" name="client_pk" value="{{ client.pk }}" />
+    <table>
+        <tr>
+            <td>Hostname: </td>
+            <td><input type="text" name="hostname" value="{{ client.hostname }}"/></td>
+        </tr>
+        <tr>
+            <td>IP address: </td>
+            <td>{{ client.ip_address }}</td>
+        </tr>
+        <tr>
+            <td>Probing interval:</td>
+            <td><input type="text" name="probing_interval" value="{{ client.probing_interval }}"/></td>
+        </tr>
+        <tr>
+{#            <td>Monitored properties:</td>#}
+{#            {% for monitored_property in monitored_properties.keys %}#}
+{#                <input type="checkbox" name="monitored_properties"#}
+{#                       value="{{ monitored_property }}" {%  if monitored_properties[monitored_property] == True %}#}
+{#            {%  endfor %}#}
+
+        </tr>
+    </table>
+    <input type="submit" value="Configure" />
+</form>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pending Clients</title>
+</head>
+<body>
+    <table border="1px solid black">
+        {% for pending_client in pending_clients %}
+            <tr>
+                <td>
+                    <p>Hostname: {{ pending_client.hostname }}</p>
+                    <p>ip_address: {{ pending_client.ip_address }}</p>
+                    <form method="post" action="{% url 'aps:PendingClientModify'%}">
+                        {% csrf_token %}
+                        <input type="hidden" name="pending_client_pk" value="{{ pending_client.pk }}" />
+                        <input type="submit" name="accept" value="Accept" />
+                        <input type="submit" name="block" value="Block" />
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pending Clients</title>
+</head>
+<body>
+    <table border="1px solid black">
+        {% for client in clients %}
+            <tr>
+                <td>
+                    <p>Hostname: {{ client.hostname }}</p>
+                    <p>ip_address: {{ client.ip_address }}</p>
+                    <form method="get" action="{% url 'aps:ClientConfiguration' client.pk %}">
+                        <input type="submit" value="configure" />
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

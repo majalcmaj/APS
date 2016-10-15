@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pending Clients</title>
+</head>
+<body>
+    <table border="1px solid black">
+        {% for blocked_client in blocked_clients %}
+            <tr>
+                <td>
+                    <p>Hostname: {{ blocked_client.hostname }}</p>
+                    <p>ip_address: {{ blocked_client.ip_address }}</p>
+                    <form method="post" action="{% url 'aps:BlockedClientModify'%}">
+                        {% csrf_token %}
+                        <input type="hidden" name="blocked_client_pk" value="{{ blocked_client.pk }}" />
+                        <input type="submit" name="accept" value="Accept" />
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
