@@ -4,8 +4,8 @@ from django.http.response import JsonResponse, Http404
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-
 from acquisition_presentation_server.common.ClientsStateManager import ClientsStateManager, ClientsManagerException
+from acquisition_presentation_server.common.ManageMonitoringData import ManageMonitoringData
 
 
 class JsonRequestView(View):
@@ -26,3 +26,5 @@ class JsonRequestView(View):
                 except ClientsManagerException as e:
                     return JsonResponse({"result":"failed", "message":e.message}, status=403)
                 return JsonResponse({"result": "success"})
+            elif json_data['message'] == 'monitoring_data':
+                ManageMonitoringData.process_data(request.META['REMOTE_ADDR'])

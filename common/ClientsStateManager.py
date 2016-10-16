@@ -43,7 +43,7 @@ class ClientsStateManager:
 class ClientsManagerException(BaseException):
     def __init__(self, message=None):
         self._message = "Error durring processing clients" if message is None else message
-        super().__init__(self._mesage)
+        super().__init__(self._message)
 
     @property
     def message(self):

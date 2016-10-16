@@ -6,6 +6,7 @@
 </head>
 <body>
 <h1>Konfiguracja klienta</h1>
+<h2 style="color: red;">{{ error_message }}</h2>
 <form method="post" action="{%  url 'aps:ApplyClientConfiguration' %}">
     {% csrf_token %}
     <input type="hidden" name="client_pk" value="{{ client.pk }}" />
@@ -23,12 +24,15 @@
             <td><input type="text" name="probing_interval" value="{{ client.probing_interval }}"/></td>
         </tr>
         <tr>
-{#            <td>Monitored properties:</td>#}
-{#            {% for monitored_property in monitored_properties.keys %}#}
-{#                <input type="checkbox" name="monitored_properties"#}
-{#                       value="{{ monitored_property }}" {%  if monitored_properties[monitored_property] == True %}#}
-{#            {%  endfor %}#}
-
+            <td>Monitored properties:</td>
+            <td>
+                {% for monitored_property in monitored_properties %}
+                    {{ monitored_property.val1 }}
+                    <input type="checkbox" name="monitored_properties[]"
+                           value="{{ monitored_property.val1 }}" {{ monitored_property.val2 }}/>
+                    <br/>
+                {%  endfor %}
+            </td>
         </tr>
     </table>
     <input type="submit" value="Configure" />

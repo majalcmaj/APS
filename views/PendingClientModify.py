@@ -10,7 +10,7 @@ class PendingClientModify(View):
     def post(self, request, *args, **kwargs):
         pk = request.POST['pending_client_pk']
 
-        if request.POST.get('decline'):
+        if request.POST.get('block'):
             ClientsStateManager.block_pending_client(pk)
 
         if request.POST.get('accept'):
