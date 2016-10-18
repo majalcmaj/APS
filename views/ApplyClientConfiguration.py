@@ -12,10 +12,11 @@ class ApplyClientConfiguration(View):
     def post(self, request, *args, **kwargs):
         pk = request.POST.get('client_pk')
         hostname = request.POST.get('hostname')
+        port = request.POST.get('port')
         probing_interval = request.POST.get('probing_interval')
         monitored_properties = request.POST.getlist('monitored_properties[]')
         print(monitored_properties)
-        cc= ClientsConfigurator(pk, hostname, probing_interval, monitored_properties)
+        cc= ClientsConfigurator(pk, hostname, port, probing_interval, monitored_properties)
         error_message=""
         try:
             cc.send_configuration()

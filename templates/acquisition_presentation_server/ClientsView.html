@@ -11,6 +11,7 @@
                 <td>
                     <p>Hostname: {{ client.hostname }}</p>
                     <p>ip_address: {{ client.ip_address }}</p>
+                    <p>port: {{ client.port }}</p>
                     <form method="get" action="{% url 'aps:ClientConfiguration' client.pk ""%}">
                         <input type="submit" value="configure" />
                     </form>

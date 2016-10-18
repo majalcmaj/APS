@@ -1,19 +1,24 @@
 import json
+from http import client
+from pydoc import cli
+
 import requests
 
 from acquisition_presentation_server.models import Client, MonitoredProperties
 
 
 class ClientsConfigurator:
-    def __init__(self, pk, hostname, probing_interval, monitored_properties):
+    def __init__(self, pk, hostname, port, probing_interval, monitored_properties):
         self._pk = pk
         self._hostname = hostname
+        self._port = port
         self._probing_interval = probing_interval
         self._monitored_properties = monitored_properties
 
     def send_configuration(self):
         client = Client.objects.get(pk=self._pk)
         client.hostname = self._hostname
+        client.port = self._port
         client.probing_interval = int(self._probing_interval)
 
         currently_monitored = client.monitored_properties.all()
@@ -30,7 +35,7 @@ class ClientsConfigurator:
         for name_to_add in to_add:
             client.monitored_properties.add(
                 MonitoredProperties.objects.get(property_name=name_to_add))
-        #self._send_data_to_client(client)  # throws error when cannot connect
+        self._send_data_to_client(client)  # throws error when cannot connect
         client.save()
 
     def _send_data_to_client(self, client):

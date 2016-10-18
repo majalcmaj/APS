@@ -5,7 +5,7 @@ from django.db import IntegrityError
 
 class ClientsStateManager:
     @staticmethod
-    def register_new_pending_client(client_hostname, client_address):
+    def register_new_pending_client(client_hostname, client_address, client_port):
 
         if len(Client.objects.filter(hostname=client_hostname)) > 0:
             raise ClientsManagerException("Already registered")
@@ -13,14 +13,15 @@ class ClientsStateManager:
             raise ClientsManagerException("Already blocked")
         if len(PendingClient.objects.filter(hostname=client_hostname)) > 0:
             raise ClientsManagerException("Already pending")
-        pending_client = PendingClient(hostname=client_hostname, ip_address=client_address)
+        pending_client = PendingClient(hostname=client_hostname,
+                                       ip_address=client_address, port=client_port)
         pending_client.save()
 
     @staticmethod
     def accept_pending_client(pk):
         pending_client = PendingClient.objects.get(pk=pk)
         client = Client(hostname=pending_client.hostname,
-                               ip_address=pending_client.ip_address)
+                               ip_address=pending_client.ip_address, port=pending_client.port)
         client.save()
         pending_client.delete()
 
@@ -28,7 +29,7 @@ class ClientsStateManager:
     def accept_blocked_client(pk):
         blocked_client = BlockedClient.objects.get(pk=pk)
         client = Client(hostname=blocked_client.hostname,
-                        ip_address=blocked_client.ip_address)
+                        ip_address=blocked_client.ip_address, port=blocked_client.port)
         client.save()
         blocked_client.delete()
 
@@ -36,7 +37,8 @@ class ClientsStateManager:
     def block_pending_client(pk):
         pending_client = PendingClient.objects.get(pk=pk)
         client = BlockedClient(hostname=pending_client.hostname,
-                               ip_address=pending_client.ip_address)
+                               ip_address=pending_client.ip_address,
+                               port=pending_client.port)
         client.save()
         pending_client.delete()
 

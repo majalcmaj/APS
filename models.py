@@ -5,6 +5,7 @@ from django.db.models.fields.related import ManyToManyField
 class ClientBase(models.Model):
     hostname = models.CharField(max_length=200, null=False, unique=True)
     ip_address = models.CharField(max_length=15, null=False, unique=True)
+    client_port = models.IntegerField(default=13000)
 
     class Meta:
         abstract = True
@@ -43,6 +44,10 @@ class Client(ClientBase):
         return "Host: {} IP:{} Probing_interval:{} Monitored Properties: [{}]"\
             .format(self.hostname, self.ip_address, self.probing_interval,
                     ', '.join([str(prop) for prop in self.monitored_properties.all()]))
+
+class MonitoringData(models.Model):
+    monitored_property = models.ForeignKey(MonitoredProperties, models.CASCADE)
+    value = models.IntegerField()
 
 
 

@@ -22,7 +22,7 @@ class JsonRequestView(View):
             json_data = json.loads(request.body.decode('utf-8'))
             if json_data['message'] == 'register':
                 try:
-                    ClientsStateManager.register_new_pending_client(request.META['REMOTE_HOST'], request.META['REMOTE_ADDR'])
+                    ClientsStateManager.register_new_pending_client(request.META['REMOTE_HOST'], request.META['REMOTE_ADDR'], json_data['HOST_PORT'])
                 except ClientsManagerException as e:
                     return JsonResponse({"result":"failed", "message":e.message}, status=403)
                 return JsonResponse({"result": "success"})
