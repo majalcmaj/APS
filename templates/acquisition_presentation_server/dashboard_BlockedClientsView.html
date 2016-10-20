@@ -1,10 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Pending Clients</title>
-</head>
-<body>
+{% extends "./skeletons/dashboard.html" %}
+{% block title %}APS - Clients{% endblock %}
+{% block content %}
     <table border="1px solid black">
         {% for blocked_client in blocked_clients %}
             <tr>
@@ -20,5 +16,4 @@
             </tr>
         {% endfor %}
     </table>
-</body>
-</html>
+{% endblock %}
