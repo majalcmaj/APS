@@ -1,9 +1,9 @@
 {
-  "SERVER_IP":"153.19.214.145",
+  "SERVER_IP":"192.168.0.100",
   "SERVER_PORT":"13000",
 
   "HOST_NAME":"artur_komp",
   "TYPE":"cluster_machine",
-  "HOST_IP":"153.19.215.118",
+  "HOST_IP":"192.168.0.103",
   "HOST_PORT":"13000"
 }
