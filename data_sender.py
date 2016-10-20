@@ -2,7 +2,8 @@ import time
 from threading import Thread
 
 from utils import utils_functions
-
+import requests
+import json
 
 class DataSender:
     def __init__(self, command_pipe, result_pipe):
@@ -19,8 +20,9 @@ class DataSender:
         url = "http://{}:{}/aps/JsonRequest".format(server_ip, server_port)
         headers = {"content-type": "aps/json"}
         payload = {"message": "register", "listening_port": host_port}
-        print("before authorization")
-        return 200
+
+        response = requests.post(url, data=json.dumps(payload), headers=headers)
+        return response.status_code
 
     def start_sending_data(self, configuration):
         self._is_sending_data = True;
