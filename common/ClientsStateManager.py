@@ -14,14 +14,16 @@ class ClientsStateManager:
         if len(PendingClient.objects.filter(hostname=client_hostname)) > 0:
             raise ClientsManagerException("Already pending")
         pending_client = PendingClient(hostname=client_hostname,
-                                       ip_address=client_address, port=client_port)
+                                       ip_address=client_address,
+                                       port=client_port)
         pending_client.save()
 
     @staticmethod
     def accept_pending_client(pk):
         pending_client = PendingClient.objects.get(pk=pk)
         client = Client(hostname=pending_client.hostname,
-                               ip_address=pending_client.ip_address, port=pending_client.port)
+                        ip_address=pending_client.ip_address,
+                        port=pending_client.port)
         client.save()
         pending_client.delete()
 
@@ -29,7 +31,8 @@ class ClientsStateManager:
     def accept_blocked_client(pk):
         blocked_client = BlockedClient.objects.get(pk=pk)
         client = Client(hostname=blocked_client.hostname,
-                        ip_address=blocked_client.ip_address, port=blocked_client.port)
+                        ip_address=blocked_client.ip_address,
+                        port=blocked_client.port)
         client.save()
         blocked_client.delete()
 

@@ -3,9 +3,9 @@ from django.db.models.fields.related import ManyToManyField
 
 
 class ClientBase(models.Model):
-    hostname = models.CharField(max_length=200, null=False, unique=True)
+    hostname = models.CharField(max_length=200)
     ip_address = models.CharField(max_length=15, null=False, unique=True)
-    client_port = models.IntegerField(default=13000)
+    port = models.IntegerField(default=13000)
 
     class Meta:
         abstract = True
@@ -20,12 +20,14 @@ class BlockedClient(ClientBase):
 class MonitoredProperties(models.Model):
     CPU_USAGE="cpu"
     RAM_USAGE="ram"
-    DISK_USAGE="dsk"
+    FREE_DISK_SPACE= "dsk"
+    HOST_NAME="wai"
 
     MONITORED_PROPERTIES_CHOICES= (
         (CPU_USAGE, 'cpu_usage'),
         (RAM_USAGE, 'ram_usage'),
-        (DISK_USAGE, 'disk_usage'),
+        (FREE_DISK_SPACE, 'free_disk_space'),
+        (HOST_NAME, 'hostname'),
     )
 
     property_name = models.CharField(max_length=3, choices=MONITORED_PROPERTIES_CHOICES, null=False)
