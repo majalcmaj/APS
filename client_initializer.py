@@ -1,6 +1,7 @@
 import json
 import os
 import socketserver
+import socket
 from multiprocessing import Process
 
 from data_sender import DataSender
@@ -20,7 +21,7 @@ class ConfigurationReceiver(socketserver.TCPServer):
         return self.sending_thread
 
     def run(self):
-        response = DataSender.register_on_server(self._server_ip, self._server_port, self._host_port)
+        response = DataSender.register_on_server(self._server_ip, self._server_port, self._host_port, self._hostname)
         if response is 200:
             self.serve_forever()
 
@@ -29,7 +30,7 @@ class ConfigurationReceiver(socketserver.TCPServer):
             configuration = json.load(configuration_file)
             self._server_ip = configuration["SERVER_IP"]
             self._server_port = configuration["SERVER_PORT"]
-            self._hostname = configuration["HOST_NAME"]
+            self._hostname = socket.gethostname()
             self._host_ip = configuration["HOST_IP"]
             self._host_port = configuration["HOST_PORT"]
             self._type = configuration["TYPE"]

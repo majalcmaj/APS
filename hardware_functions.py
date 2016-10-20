@@ -1,6 +1,6 @@
 import subprocess
 import psutil
-
+import socket
 
 # add functions for monitoring parameters
 # result should be a string
@@ -14,9 +14,8 @@ def get_ram_usage():
     return str(round(psutil.virtual_memory().available / 1024 / 1024, 2))
 
 
-def get_whoami():
-    procedure = subprocess.Popen('whoami', stdout=subprocess.PIPE)
-    return procedure.stdout.read().decode("utf-8")
+def get_hostname():
+    return socket.gethostname()
 
 
 def get_free_disk_space():

@@ -16,10 +16,10 @@ class DataSender:
         return self._is_sending_data
 
     @staticmethod
-    def register_on_server(server_ip, server_port, host_port):
+    def register_on_server(server_ip, server_port, host_port, hostname):
         url = "http://{}:{}/aps/JsonRequest".format(server_ip, server_port)
         headers = {"content-type": "aps/json"}
-        payload = {"message": "register", "listening_port": host_port}
+        payload = {"message": "register", "listening_port": host_port, "hostname":hostname}
 
         response = requests.post(url, data=json.dumps(payload), headers=headers)
         return response.status_code
