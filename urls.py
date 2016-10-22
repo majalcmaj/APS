@@ -1,6 +1,5 @@
 from django.conf.urls import url
 
-from acquisition_presentation_server.common.InitializeDatabase import initialize_database
 from acquisition_presentation_server.views.ApplyClientConfiguration import ApplyClientConfiguration
 from acquisition_presentation_server.views.BlockedClientModify import BlockedClientModify
 from acquisition_presentation_server.views.BlockedClientsView import BlockedClientsView
@@ -28,4 +27,3 @@ urlpatterns = [
         name = 'BlockedClientModify'),
 
 ]
-initialize_database()

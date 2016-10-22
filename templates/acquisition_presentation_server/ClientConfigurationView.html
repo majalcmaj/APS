@@ -29,9 +29,9 @@
                <div class="col-lg-5 accent">Monitored properties:</div >
                 <div class="col-lg-5">
                     {% for monitored_property in monitored_properties %}
-                        {{ monitored_property.val1 }}
+                        {{ monitored_property.0 }} [{{ monitored_property.1 }}]
                         <input type="checkbox" name="monitored_properties[]"
-                               value="{{ monitored_property.val1 }}" {{ monitored_property.val2 }}/>
+                               value="{{ monitored_property.0 }}" {{ monitored_property.2 }}/>
                         <br/>
                     {%  endfor %}
                 </div >

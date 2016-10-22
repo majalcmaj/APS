@@ -22,19 +22,19 @@ class ClientsConfigurator:
         client.probing_interval = int(self._probing_interval)
 
         currently_monitored = client.monitored_properties.all()
-        currently_monitored_names = set([item.property_name for item in list(currently_monitored)])
+        currently_monitored_names = set([item.name for item in list(currently_monitored)])
         new_monitored_names = set(self._monitored_properties)
         to_delete = currently_monitored_names - new_monitored_names
         to_add = new_monitored_names - currently_monitored_names
 
         for name_to_del in to_delete:
             client.monitored_properties.remove(
-                MonitoredProperties.objects.get(property_name=name_to_del))
+                MonitoredProperties.objects.get(name=name_to_del))
 
         print(self._monitored_properties)
         for name_to_add in to_add:
             client.monitored_properties.add(
-                MonitoredProperties.objects.get(property_name=name_to_add))
+                MonitoredProperties.objects.get(name=name_to_add))
         self._send_data_to_client(client)  # throws error when cannot connect
         client.save()
 
@@ -46,4 +46,5 @@ class ClientsConfigurator:
             "monitoring_parameters": " ".join(self._monitored_properties), # list(self._monitored_properties),
             "probing_interval": self._probing_interval
         }
+        print(payload)
         response = requests.post(url, data=json.dumps(payload), headers=headers)

@@ -8,4 +8,4 @@ class BlockedClientsView(View):
     def get(self, request, *args, **kwargs):
         blocked_clients = BlockedClient.objects.all()
         context = {"blocked_clients":blocked_clients}
-        return render(request, 'acquisition_presentation_server/dashboard_BlockedClientsView.html', context)
+        return render(request, 'acquisition_presentation_server/BlockedClientsView.html', context)

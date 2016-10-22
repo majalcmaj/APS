@@ -2,32 +2,31 @@
 {% block title %}APS - Clients{% endblock %}
 {% block content %}
     <table border="1px solid black">
-        {% for pending_client in pending_clients %}
+        {% for blocked_client in blocked_clients %}
             <div class="panel panel-default">
                 <div class="panel-heading align_left">
                     <div class="panel-title">
                         <div class="container" style="display: inline-block; padding-top: 5px;">
                             <span class="accent col-md-2">Hostname</span>
-                            <span class="col-md-5">{{ pending_client.hostname }}</span>
+                            <span class="col-md-5">{{ blocked_client.hostname }}</span>
                         </div>
                     </div>
                 </div>
                 <div class="panel-body container">
                     <div class="row">
                         <div class="accent col-md-3">IP address</div>
-                        <div class="col-md-3">{{ pending_client.ip_address }}</div>
+                        <div class="col-md-3">{{ blocked_client.ip_address }}</div>
                         <div class="accent col-md-2">Port</div>
-                        <div class="col-md-3">{{ pending_client.port }}</div>
+                        <div class="col-md-3">{{ blocked_client.port }}</div>
                         </br>
                         <p>Monitored properties:
-                        {{ pending_client.monitored_properties.all|join:", "}}
+                        {{ blocked_client.monitored_properties.all|join:", "}}
                         </p>
                         <br/>
                         <form method="post" action="{% url 'aps:PendingClientModify'%}">
                             {% csrf_token %}
-                            <input type="hidden" name="pending_client_pk" value="{{ pending_client.pk }}" />
+                            <input type="hidden" name="blocked_client_pk" value="{{ blocked_client.pk }}" />
                             <button type="submit" class="btn btn-success" name="accept" value="accept">Accept</button>
-                            <button type="submit" class="btn btn-danger" name="block" value="block">Block</button>
                         </form>
                     </div>
                 </div>
