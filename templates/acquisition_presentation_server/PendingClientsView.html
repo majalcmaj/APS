@@ -19,15 +19,19 @@
                         <div class="accent col-md-2">Port</div>
                         <div class="col-md-3">{{ pending_client.port }}</div>
                         </br>
-                        <p>Monitored properties:
+                        <p class="col-md-12">Monitored properties:
                         {{ pending_client.monitored_properties.all|join:", "}}
                         </p>
                         <br/>
                         <form method="post" action="{% url 'aps:PendingClientModify'%}">
                             {% csrf_token %}
                             <input type="hidden" name="pending_client_pk" value="{{ pending_client.pk }}" />
-                            <button type="submit" class="btn btn-success" name="accept" value="accept">Accept</button>
-                            <button type="submit" class="btn btn-danger" name="block" value="block">Block</button>
+                            <div class="col-md-1">
+                                <button type="submit" class="btn btn-success" name="accept" value="accept">Accept</button>
+                            </div>
+                            <div class="col-md-1">
+                                <button type="submit" class="btn btn-danger" name="block" value="block">Block</button>
+                            </div>
                         </form>
                     </div>
                 </div>

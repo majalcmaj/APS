@@ -23,7 +23,7 @@
                         {{ blocked_client.monitored_properties.all|join:", "}}
                         </p>
                         <br/>
-                        <form method="post" action="{% url 'aps:PendingClientModify'%}">
+                        <form method="post" action="{% url 'aps:BlockedClientModify'%}">
                             {% csrf_token %}
                             <input type="hidden" name="blocked_client_pk" value="{{ blocked_client.pk }}" />
                             <button type="submit" class="btn btn-success" name="accept" value="accept">Accept</button>

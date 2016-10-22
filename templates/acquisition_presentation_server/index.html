@@ -1,4 +1,5 @@
 {% extends "./skeletons/dashboard.html" %}
+{% load staticfiles %}
 {% block title %}APS - Clients{% endblock %}
 {% block content %}
 {% for client in clients %}
@@ -24,11 +25,20 @@
                         <div class="col-md-3">{{ client.port }}</div>
                     </div>
                     <div class="panel panel-default">
-                      <div class="panel-body">
-                        MONITORING INFO
+                      <div class="panel-body" >
+                            <canvas class="myChart"></canvas>
                       </div>
                     </div>
                 </div>
             </div>
 {% endfor %}
+
+        <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.0.min.js"></script>
+        <script type="text/javascript" src="{% static 'acquisition_presentation_server/js/Chart.min.js' %}"></script>
+        <script type="text/javascript">
+            $.get('{% url "aps:line_chart_json" %}', function(data) {
+                var ctx = $(".myChart").get(0).getContext("2d");
+                new Chart(ctx, { type: "line", data: data,});
+            });
+        </script>
 {% endblock %}

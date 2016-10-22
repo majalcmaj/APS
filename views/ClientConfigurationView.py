@@ -1,13 +1,7 @@
-from django.http.response import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
-from django.urls.base import reverse
 from django.views import View
 
-from acquisition_presentation_server.common.ClientsStateManager import ClientsStateManager
 from acquisition_presentation_server.models import PendingClient, BlockedClient, Client, MonitoredProperties
-from acquisition_presentation_server.util.MethodAccessedTuple import MethodAccessedTuple
-from acquisition_presentation_server.views import custom_filters
-
 
 class ClientConfigurationView(View):
     def get(self, request, *args, **kwargs):

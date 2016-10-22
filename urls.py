@@ -1,10 +1,10 @@
 from django.conf.urls import url
 
+from acquisition_presentation_server.view import LineChartJSONView, line_chart_json, line_chart
 from acquisition_presentation_server.views.ApplyClientConfiguration import ApplyClientConfiguration
 from acquisition_presentation_server.views.BlockedClientModify import BlockedClientModify
 from acquisition_presentation_server.views.BlockedClientsView import BlockedClientsView
 from acquisition_presentation_server.views.ClientConfigurationView import ClientConfigurationView
-from acquisition_presentation_server.views.ClientsView import ClientsView
 from acquisition_presentation_server.views.IndexView import IndexView
 from acquisition_presentation_server.views.JsonRequestView import JsonRequestView
 from acquisition_presentation_server.views.PendingClientsView import PendingClientsView
@@ -14,7 +14,6 @@ app_name='aps'
 urlpatterns = [
     url(r'^$', IndexView.as_view(), name='index'),
     url(r'^JsonRequest$', JsonRequestView.as_view(), name = 'JsonRequest'),
-    url(r'^Clients/$', ClientsView.as_view(), name = 'Clients'),
     url(r'^ClientConfiguration/(?P<client_pk>[0-9]+)/?(?P<error_message>.*)$',
         ClientConfigurationView.as_view(), name = 'ClientConfiguration'),
     url(r'^ApplyClientConfiguration$',
@@ -25,5 +24,9 @@ urlpatterns = [
         name = 'PendingClientModify'),
     url(r'^BlockedClientModify/$', BlockedClientModify.as_view(),
         name = 'BlockedClientModify'),
+    url(r'^line_chart_json/$', line_chart_json,
+        name = 'line_chart_json'),
+    url(r'^line_chart/$', line_chart,
+        name = 'line_chart'),
 
 ]
