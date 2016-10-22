@@ -43,7 +43,7 @@ class ClientsConfigurator:
         headers = {"content-type": "aps/json"}
         payload = {
             "data_type": "configuration",
-            "monitoring_parameters": " ".join(self._monitored_properties),
+            "monitoring_parameters": " ".join(self._monitored_properties), # list(self._monitored_properties),
             "probing_interval": self._probing_interval
         }
         response = requests.post(url, data=json.dumps(payload), headers=headers)

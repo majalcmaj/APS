@@ -24,7 +24,9 @@ class JsonRequestView(View):
                 try:
                     ClientsStateManager.register_new_pending_client(json_data['hostname'],
                                                                     request.META['REMOTE_ADDR'],
-                                                                    json_data['listening_port'])
+                                                                    json_data['listening_port'],
+                                                                    json_data['monitored_properties'])
+
                 except ClientsManagerException as e:
                     return JsonResponse({"result":"failed", "message":e.message}, status=403)
                 return JsonResponse({"result": "success"})
