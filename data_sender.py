@@ -16,13 +16,19 @@ class DataSender:
         return self._is_sending_data
 
     @staticmethod
-    def register_on_server(server_ip, server_port, host_port, hostname):
-        url = "http://{}:{}/aps/JsonRequest".format(server_ip, server_port)
+    def register_on_server(configuration):
+        url = "http://{}:{}/aps/JsonRequest".format(configuration['SERVER_IP'], configuration['SERVER_PORT'])
         headers = {"content-type": "aps/json"}
-        payload = {"message": "register", "listening_port": host_port, "hostname":hostname}
+        payload = {"message": "register",
+                   "listening_port": configuration['HOST_PORT'],
+                   "monitored_properties":configuration['MONITORED_PROPERTIES'],
+                   "hostname":configuration['HOSTNAME']
+                   }
+        print(payload)
 
-        response = requests.post(url, data=json.dumps(payload), headers=headers)
-        return response.status_code
+        #response = requests.post(url, data=json.dumps(payload), headers=headers)
+        #return response.status_code
+        return 200
 
     def start_sending_data(self, configuration):
         self._is_sending_data = True;
