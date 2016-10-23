@@ -4,6 +4,7 @@ from pydoc import cli
 
 import requests
 
+from acquisition_presentation_server.common import RRDtoolManager
 from acquisition_presentation_server.models import Client, MonitoredProperties
 
 
@@ -37,6 +38,7 @@ class ClientsConfigurator:
                 MonitoredProperties.objects.get(name=name_to_add))
         self._send_data_to_client(client)  # throws error when cannot connect
         client.save()
+        RRDtoolManager(client).create_rrd()
 
     def _send_data_to_client(self, client):
         url = "http://{}:{}".format(client.ip_address, 13000)
@@ -46,5 +48,4 @@ class ClientsConfigurator:
             "monitoring_parameters": " ".join(self._monitored_properties), # list(self._monitored_properties),
             "probing_interval": self._probing_interval
         }
-        print(payload)
         response = requests.post(url, data=json.dumps(payload), headers=headers)
