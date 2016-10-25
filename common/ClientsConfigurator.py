@@ -4,7 +4,7 @@ from pydoc import cli
 
 import requests
 
-from acquisition_presentation_server.common import RRDtoolManager
+from acquisition_presentation_server.common.RRDtoolManager import RRDtoolManager
 from acquisition_presentation_server.models import Client, MonitoredProperties
 
 
@@ -41,7 +41,7 @@ class ClientsConfigurator:
         RRDtoolManager(client).create_rrd()
 
     def _send_data_to_client(self, client):
-        url = "http://{}:{}".format(client.ip_address, 13000)
+        url = "http://{}:{}".format(client.ip_address, client.port)
         headers = {"content-type": "aps/json"}
         payload = {
             "data_type": "configuration",

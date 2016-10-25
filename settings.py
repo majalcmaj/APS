@@ -1,1 +1,1 @@
-RRD_DATABASE_DIRECTORY = "/var/rrddb/"
+RRD_DATABASE_DIRECTORY = "/var/rrddb"

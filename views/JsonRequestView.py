@@ -31,4 +31,5 @@ class JsonRequestView(View):
                     return JsonResponse({"result":"failed", "message":e.message}, status=403)
                 return JsonResponse({"result": "success"})
             elif json_data['message'] == 'monitoring_data':
+                #TODO Zrobić wysyłanie na kliencie, pobieranie, wpis do RRD i wyświetlanie na serwerze
                 ManageMonitoringData.process_data(request.META['REMOTE_ADDR'])
