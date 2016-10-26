@@ -1,7 +1,7 @@
 import time
 import calendar
 
-
+# TO trzeba zamienić na wywołanie funkcji rrd, musi zwracać taki sam output
 def get_client_data():
     time_s = calendar.timegm(time.gmtime())
     return {
