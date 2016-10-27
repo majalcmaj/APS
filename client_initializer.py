@@ -13,7 +13,10 @@ from utils import utils_functions
 class ConfigurationReceiver(socketserver.TCPServer):
     def __init__(self, command_pipe, result_pipe):
         self._load_initial_configuration()
-        self.data_sender = DataSender(command_pipe, result_pipe)
+        self.data_sender = DataSender(command_pipe, result_pipe, self._configuration['SERVER_IP'],
+                                      self._configuration['SERVER_PORT'],
+                                      self._configuration['HOSTNAME'])
+
         socketserver.TCPServer.__init__(self, ("", int(self._configuration['HOST_PORT'])), ConfigurationReceiverHandler)
 
     def get_sending_thread(self):
