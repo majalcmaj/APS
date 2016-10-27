@@ -27,9 +27,10 @@ class JsonRequestView(View):
                                                                     json_data['listening_port'],
                                                                     json_data['monitored_properties'])
 
+
                 except ClientsManagerException as e:
                     return JsonResponse({"result":"failed", "message":e.message}, status=403)
                 return JsonResponse({"result": "success"})
             elif json_data['message'] == 'monitoring_data':
-                #TODO Zrobić wysyłanie na kliencie, pobieranie, wpis do RRD i wyświetlanie na serwerze
-                ManageMonitoringData.process_data(request.META['REMOTE_ADDR'])
+                ManageMonitoringData.process_data(request.META['REMOTE_ADDR'],json_data['monitored_properties'])
+                return JsonResponse({"result": "success"})

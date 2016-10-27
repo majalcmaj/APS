@@ -5,7 +5,7 @@ from acquisition_presentation_server import settings
 
 
 class RRDtoolManager:
-    # TODO: test, czy jeździ
+
     def __init__(self, client):
         self._path = settings.RRD_DATABASE_DIRECTORY
         self._hostname = client.hostname
@@ -15,7 +15,7 @@ class RRDtoolManager:
     def create_rrd(self):
         rrd_database_name = self._get_rrd_abs_path()
         monitoring_parameters = []
-        for k, v in self._monitored_properties:
+        for k, v in self._monitored_properties.items():
             if v != 'string':
                 monitoring_parameters.append("DS:" + k + ":GAUGE:" + str(2 * self._probing_interval) + ":U:U")
 
@@ -39,9 +39,7 @@ class RRDtoolManager:
     def update_rrd(self, records):
         rrd_database_name = self._get_rrd_abs_path()
         order = self._retreive_order_of_rows(rrd_database_name)
-
         record_string = str(int(time.time()))
-
         for record in order:
             record_string += ":" + records[record]
 
@@ -50,6 +48,7 @@ class RRDtoolManager:
 
     # TODO Nie da się inaczej, niż czytać plik
     # dla paru klientów ok, ale jak z 50 co sekundę to może być wąskie gardło
+
 
     def _retreive_order_of_rows(self, path):
         params = []
@@ -62,13 +61,16 @@ class RRDtoolManager:
     def _get_rrd_abs_path(self):
         return self._path + "/" + self._hostname + ".rrd"
 
-    #TODO: ja bym zmienił na czas wstecz od teraz
-    def fetch_data(self, start_time, end_time):
+    def fetch_data(self, time_period):
         rrd_database_name = self._get_rrd_abs_path()
 
-        records = rrdtool.fetch(rrd_database_name, 'LAST', '--start', str(start_time), '--end',
-                                str(end_time))
+        current_time = int(time.time())
+        records = rrdtool.fetch(rrd_database_name, 'LAST', '--start', str(current_time-time_period), '--end',
+                                str(current_time))
         result = {}
-        result['time'] = [start_time + i for i in range(1, len(records[2]) + 1)]
+        result['time'] = [current_time-time_period + i for i in range(1, len(records[2]) + 1)]
 
-        order = self._retreive_order_of_rows(rrd_database_name)
+        order = RRDtoolManager._retreive_order_of_rows(rrd_database_name)
+        for i in range(0, len(order)):
+            result[order[i]] = [value[i] for value in records[2]]
+        return result
