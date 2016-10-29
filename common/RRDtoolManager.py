@@ -68,9 +68,9 @@ class RRDtoolManager:
         records = rrdtool.fetch(rrd_database_name, 'LAST', '--start', str(current_time-time_period), '--end',
                                 str(current_time))
         result = {}
-        result['time'] = [current_time-time_period + i for i in range(1, len(records[2]) + 1)]
-
-        order = RRDtoolManager._retreive_order_of_rows(rrd_database_name)
+        result['unix_time'] = [current_time-time_period + i for i in range(1, len(records[2]) + 1)]
+        data = result['data'] = {}
+        order = self._retreive_order_of_rows(rrd_database_name)
         for i in range(0, len(order)):
-            result[order[i]] = [value[i] for value in records[2]]
+            data[order[i]] = [value[i] for value in records[2]]
         return result

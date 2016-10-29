@@ -9,11 +9,14 @@ from acquisition_presentation_server.models import Client
 class IndexView(View):
     def get(self, request, *args, **kwargs):
         clients_data = []
+
         for client in Client.objects.all() :
             clients_data.append(
                 {
                     "client" : client,
-                    "monitoring_data" : json.dumps(get_client_data())
+                    "monitoring_data" :
+                        json.dumps(get_client_data(client, 120)) if client.is_configured else []
+
                 }
             )
         context = {"clients_data":clients_data}

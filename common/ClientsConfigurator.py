@@ -37,6 +37,7 @@ class ClientsConfigurator:
             client.monitored_properties.add(
                 MonitoredProperties.objects.get(name=name_to_add))
         self._send_data_to_client(client)  # throws error when cannot connect
+        client.is_configured = True
         client.save()
         RRDtoolManager(client).create_rrd()
 

@@ -1,6 +1,7 @@
 {% extends "./skeletons/dashboard.html" %}
 {% load staticfiles %}
 {% block title %}APS - Clients{% endblock %}
+{% block head %} <meta http-equiv="refresh" content="5; {% url 'aps:index' %}">{% endblock %}
 {% block content %}
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.0.min.js"></script>
 <script type="text/javascript" src="{% static 'acquisition_presentation_server/js/Chart.min.js' %}"></script>

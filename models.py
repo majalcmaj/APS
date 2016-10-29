@@ -32,6 +32,7 @@ class BlockedClient(ClientBase):
 
 class Client(ClientBase):
     probing_interval = models.IntegerField(default=10)
+    is_configured = models.BooleanField(default=False)
     @property
     def rrd_database_location(self):
         return settings.RRD_DATABASE_DIRECTORY + "/aps_{}.rrd".format(self.hostname)
