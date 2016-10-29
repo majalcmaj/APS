@@ -61,6 +61,7 @@ class RRDtoolManager:
     def _get_rrd_abs_path(self):
         return self._path + "/" + self._hostname + ".rrd"
 
+    # TODO Czy da się pobierać tylko jedną daną?
     def fetch_data(self, time_period):
         rrd_database_name = self._get_rrd_abs_path()
 

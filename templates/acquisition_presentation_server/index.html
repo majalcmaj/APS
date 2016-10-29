@@ -1,68 +1,73 @@
 {% extends "./skeletons/dashboard.html" %}
 {% load staticfiles %}
 {% block title %}APS - Clients{% endblock %}
-{% block head %} <meta http-equiv="refresh" content="5; {% url 'aps:index' %}">{% endblock %}
+{% block head %}
+    <meta http-equiv="refresh" content="5; {% url 'aps:index' %}">
+    <script type="text/javascript" src="{% static "acquisition_presentation_server/js/jquery-3.1.1.min.js" %}"></script>
+    <script type="text/javascript" src="{% static 'acquisition_presentation_server/js/Chart.min.js' %}"></script>
+{% endblock %}
 {% block content %}
-<script type="text/javascript" src="http://code.jquery.com/jquery-1.10.0.min.js"></script>
-<script type="text/javascript" src="{% static 'acquisition_presentation_server/js/Chart.min.js' %}"></script>
-{% for client_data in clients_data %}
-            <div class="panel panel-default">
-                <div class="panel-heading align_left">
-                    <div class="panel-title">
+<div class="container-fluid">
+    {% for client_data in clients_data %}
+        <div class="col-lg-4">
+            <a href="{% url 'aps:ClientDetails' client_data.client.pk %}" >
+                <div class="panel panel-default">
+                    <div class="panel-heading align_left">
+                        <div class="panel-title">
 
-                        <form class="inline_form" method="get" action="{% url 'aps:ClientConfiguration' client_data.client.pk ""%}">
-                                <button type="submit" value="configure" class="btn btn-default btn-md glyphicon glyphicon-wrench">
-                                </button>
-                        </form>
-                        <div class="container" style="display: inline-block; padding-top: 5px;">
-                            <span class="accent col-md-2">Hostname</span>
-                            <span class="col-md-5">{{ client_data.client.hostname }}</span>
+                            <form class="inline_form" method="get" action="{% url 'aps:ClientConfiguration' client_data.client.pk ""%}">
+                                    <button type="submit" value="configure" class="btn btn-default btn-md glyphicon glyphicon-wrench">
+                                    </button>
+                            </form>
+                            <div style="display: inline-block; padding-top: 5px;">
+                                <span class="accent">Hostname</span>
+                                <span>{{ client_data.client.hostname }}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="panel-body container">
-                    <div class="row">
-                        <div class="accent col-md-3">IP address</div>
-                        <div class="col-md-3">{{ client_data.client.ip_address }}</div>
-                        <div class="accent col-md-2">Port</div>
-                        <div class="col-md-3">{{ client_data.client.port }}</div>
-                    </div>
-                    <div class="panel panel-default">
-                        <div id="client_chart{{ client_data.client.pk }}" class="panel-body"></div>
-                        <script type="text/javascript">
-                            $(document).ready(function() {
-                                var container = $("#client_chart{{ client_data.client.pk }}").get(0);
-                                var data_json= {{ client_data.monitoring_data | safe}};
-                                var time = data_json["unix_time"];
-                                var data = data_json["data"];
-                                for (var data_unit in data){
+                    <div class="panel-body">
+                        <p><span class="accent">IP address</span>{{ client_data.client.ip_address }}</p>
+                        <p><span class="accent">Port</span>{{ client_data.client.port }}</p>
+                        <div class="panel panel-default">
+                            <div id="client_chart{{ client_data.client.pk }}" class="panel-body"></div>
+                            <script type="text/javascript">
+                                $(document).ready(function() {
+                                    var container = $("#client_chart{{ client_data.client.pk }}").get(0);
+                                    var data_json= {{ client_data.monitoring_data | safe}};
+                                    var time = data_json["unix_time"];
+                                    var data_arr = data_json["data"]["cpu_usage"];
                                     var chart_canvas = document.createElement("canvas");
-                                    chart_canvas.setAttribute("style", "max-height: 300px; width: 100%;")
                                     var ctx = chart_canvas.getContext("2d");
                                     container.appendChild(chart_canvas);
-                                    var data_arr = data[data_unit];
                                     new Chart(ctx, { type: "line", data: {
                                         labels: time,
                                         datasets: [{
-                                            label: data_unit,
+                                            label: "Cpu usage [%]",
                                             data: data_arr,
                                             tension: 0,
                                             backgroundColor: 'rgba(0, 50,200,0.1)'
 
-                                        }]
+                                        },
+                                        ]
                                     },
                                     options: {
                                         responsive: true,
-                                        maintainAspectRatio: false
+                                        maintainAspectRatio: false,
+                                        scaleOverride : true,
+                                        scaleSteps : 10,
+                                        scaleStepWidth : 10,
+                                        scaleStartValue : 0,
+
                                     }
                                     });
 
-                                }
-                            })
-                        </script>
+                                })
+                            </script>
+                        </div>
                     </div>
                 </div>
-            </div>
-{% endfor %}
-
+            </a>
+        </div>
+    {% endfor %}
+</div>
 {% endblock %}
