@@ -7,12 +7,12 @@ class ConfigurationReceiverHandler(SimpleHTTPRequestHandler):
     def do_POST(self):
         length = self.headers['content-length']
         data = self.rfile.read(int(length))
+
         self.send_response(200)
         self.send_header('Content-type', 'text/json')
         self.end_headers()
 
-        thread = Thread(target=self.configure_client, kwargs={"data": data, })
-        thread.start()
+        self.configure_client(data)
 
     def configure_client(self, data):
         configuration = json.loads(data.decode('utf-8'))

@@ -1,6 +1,9 @@
 import json
 import os
 import socketserver
+import requests
+import time
+
 from multiprocessing import Process
 
 from data_sender import DataSender
@@ -19,11 +22,8 @@ class ConfigurationReceiver(socketserver.TCPServer):
 
         socketserver.TCPServer.__init__(self, ("", int(self._configuration['HOST_PORT'])), ConfigurationReceiverHandler)
 
-    def get_sending_thread(self):
-        return self.sending_thread
-
     def run(self):
-        response = DataSender.register_on_server(self._configuration)
+        response = self.register_on_server(self._configuration)
         if response is 200:
             self.serve_forever()
 
@@ -31,11 +31,24 @@ class ConfigurationReceiver(socketserver.TCPServer):
         with open("configuration/base_config.json") as configuration_file:
             self._configuration = json.load(configuration_file)
 
-    def get_server_ip(self):
-        return self._server_ip
+    @staticmethod
+    def register_on_server(configuration):
+        url = "http://{}:{}/aps/JsonRequest".format(configuration['SERVER_IP'], configuration['SERVER_PORT'])
+        headers = {"content-type": "aps/json"}
+        payload = {"message": "register",
+                   "listening_port": configuration['HOST_PORT'],
+                   "monitored_properties": configuration['MONITORED_PROPERTIES'],
+                   "hostname": configuration['HOSTNAME']
+                   }
+        print(payload)
 
-    def get_server_port(self):
-        return self._server_port
+        while True:
+            try:
+                response = requests.post(url, data=json.dumps(payload), headers=headers)
+                return response.status_code
+            except requests.ConnectionError as e:
+                print("Could not connect to server. Trying again...")
+                time.sleep(5)
 
 
 if __name__ == '__main__':
