@@ -2,44 +2,53 @@
 {% load staticfiles %}
 {% block title %}APS - Clients{% endblock %}
 {% block head %}
-    <meta http-equiv="refresh" content="5; {% url 'aps:index' %}">
     <script type="text/javascript" src="{% static "acquisition_presentation_server/js/jquery-3.1.1.min.js" %}"></script>
     <script type="text/javascript" src="{% static 'acquisition_presentation_server/js/Chart.min.js' %}"></script>
+    <script type="text/javascript">
+        // Collecting initial data for charts from server
+        var charts = {};
+        var clients_visible = [];
+        var chart_datasets = {{ monitoring_data | safe }};
+        var timestamp = {{ timestamp }};
+    </script>
 {% endblock %}
 {% block content %}
 <div class="container-fluid">
-    {% for client_data in clients_data %}
+    {% for client in clients %}
         <div class="col-lg-4">
-            <a href="{% url 'aps:ClientDetails' client_data.client.pk %}" >
+            <a href="{% url 'aps:ClientDetails' client.pk %}" >
                 <div class="panel panel-default">
                     <div class="panel-heading align_left">
                         <div class="panel-title">
 
-                            <form class="inline_form" method="get" action="{% url 'aps:ClientConfiguration' client_data.client.pk ""%}">
+                            <form class="inline_form" method="get" action="{% url 'aps:ClientConfiguration' client.pk ""%}">
                                     <button type="submit" value="configure" class="btn btn-default btn-md glyphicon glyphicon-wrench">
                                     </button>
                             </form>
                             <div style="display: inline-block; padding-top: 5px;">
                                 <span class="accent">Hostname</span>
-                                <span>{{ client_data.client.hostname }}</span>
+                                <span>{{ client.hostname }}</span>
                             </div>
                         </div>
                     </div>
                     <div class="panel-body">
-                        <p><span class="accent">IP address</span>{{ client_data.client.ip_address }}</p>
-                        <p><span class="accent">Port</span>{{ client_data.client.port }}</p>
+                        <p><span class="accent">IP address</span>{{ client.ip_address }}</p>
+                        <p><span class="accent">Port</span>{{ client.port }}</p>
                         <div class="panel panel-default">
-                            <div id="client_chart{{ client_data.client.pk }}" class="panel-body"></div>
+                            <div id="client_chart{{ client.pk }}" class="panel-body"></div>
                             <script type="text/javascript">
                                 $(document).ready(function() {
-                                    var container = $("#client_chart{{ client_data.client.pk }}").get(0);
-                                    var data_json= {{ client_data.monitoring_data | safe}};
+                                    //Append client pk to visible clients - used on chart updating
+                                    clients_visible.push("{{ client.pk }}");
+                                    var container = $("#client_chart{{ client.pk }}").get(0);
+                                    var data_json= chart_datasets["{{ client.pk }}"];
+                                    console.log("DATA JSON::: " + chart_datasets)
                                     var time = data_json["unix_time"];
                                     var data_arr = data_json["data"]["cpu_usage"];
                                     var chart_canvas = document.createElement("canvas");
                                     var ctx = chart_canvas.getContext("2d");
                                     container.appendChild(chart_canvas);
-                                    new Chart(ctx, { type: "line", data: {
+                                    charts["{{ client.pk }}"] = new Chart(ctx, { type: "line", data: {
                                         labels: time,
                                         datasets: [{
                                             label: "Cpu usage [%]",
@@ -47,20 +56,19 @@
                                             tension: 0,
                                             backgroundColor: 'rgba(0, 50,200,0.1)'
 
-                                        },
+                                        }
                                         ]
                                     },
                                     options: {
                                         responsive: true,
                                         maintainAspectRatio: false,
-                                        scaleOverride : true,
-                                        scaleSteps : 10,
-                                        scaleStepWidth : 10,
-                                        scaleStartValue : 0,
-
+                                        animation: false,
+                                        scaleOverride: true,
+                                        scaleStartValue: 0,
+                                        scaleStepWidth: 1,
+                                        scaleSteps: 30
                                     }
                                     });
-
                                 })
                             </script>
                         </div>
@@ -70,4 +78,49 @@
         </div>
     {% endfor %}
 </div>
+<script type="text/javascript">
+//Chart content updater
+function updateCharts() {
+       $.ajax({
+        url : "{% url 'aps:UpdateCharts' %}", // the endpoint
+        type : "POST", // http method
+        data : {
+            client_pks : JSON.stringify(clients_visible),
+            most_recent_timestamp : timestamp
+        }, // data sent with the post request
+
+        // handle a successful response
+        success : function(json) {
+            timestamp = json["timestamp"];
+            var monitoring_data = json["monitoring_data"];
+            for(var pk in monitoring_data) {
+                var chart = charts[pk];
+                console.log("charts: " + chart instanceof Chart);
+                var current_data = chart.data.datasets[0].data;
+                var new_data = monitoring_data[pk]["data"]["cpu_usage"];
+                new_data.forEach(function(record) {
+                    current_data.shift();
+                    current_data.push(record);
+                    console.log(record);
+                });
+{#                var current_time = chart.data.labels;#}
+{#                for(var label in monitoring_data[pk]["unix_time"]) {#}
+{#                    current_time.shift();#}
+{#                    current_time.push(label);#}
+{#                }#}
+                chart.update();
+            }
+            console.log("success"); // another sanity check
+        },
+
+        // handle a non-successful response
+        error : function(xhr,errmsg,err) {
+            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+
+                " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
+            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+        }
+    });
+}
+window.onload(setInterval(updateCharts, {{ update_ratio_seconds }} * 1000));
+</script>
 {% endblock %}
