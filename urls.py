@@ -10,6 +10,7 @@ from acquisition_presentation_server.views.IndexView import IndexView
 from acquisition_presentation_server.views.JsonRequestView import JsonRequestView
 from acquisition_presentation_server.views.PendingClientsView import PendingClientsView
 from acquisition_presentation_server.views.PendingClientModify import PendingClientModify
+from acquisition_presentation_server.views.UpdateCharts import UpdateCharts
 
 app_name='aps'
 urlpatterns = [
@@ -31,5 +32,6 @@ urlpatterns = [
         name = 'line_chart_json'),
     url(r'^line_chart/$', line_chart,
         name = 'line_chart'),
-
+    url(r'^UpdateCharts/$', UpdateCharts.as_view(),
+        name = 'UpdateCharts'),
 ]
