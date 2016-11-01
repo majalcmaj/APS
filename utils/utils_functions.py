@@ -23,3 +23,14 @@ def drop_privileges(uid_name, gid_name):
 
     os.setgid(running_gid)
     os.setuid(running_uid)
+
+
+def yes_no_prompt(question):
+    yes_options = ['yes', 'y', '']
+    print(question)
+    choice = input()
+
+    if choice.lower() in yes_options:
+        return True
+    else:
+        return False
