@@ -3,11 +3,11 @@ import os
 import socketserver
 import requests
 import time
+import io
+import constant_values
 
 from multiprocessing import Process
-
 from data_sender import DataSender
-
 from configuration_receiving_handler import ConfigurationReceiverHandler
 from hardware_data_collector import HardwareDataCollector
 from utils import utils_functions
@@ -23,12 +23,28 @@ class ConfigurationReceiver(socketserver.TCPServer):
         socketserver.TCPServer.__init__(self, ("", int(self._configuration['HOST_PORT'])), ConfigurationReceiverHandler)
 
     def run(self):
-        response = self.register_on_server(self._configuration)
-        if response is 200:
-            self.serve_forever()
+        if os.path.isfile(constant_values.LAST_CONFIG_PATH):
+            if utils_functions.yes_no_prompt(constant_values.LAST_CONFIG_PROMPT) is True:
+                configuration = self._load_last_conifguration()
+                if configuration is not None:
+                    self.data_sender.start_sending_data(configuration)
+                    self.serve_forever()
+        else:
+            os.remove(constant_values.LAST_CONFIG_PATH)
+
+        self.register_on_server(self._configuration)
+        self.serve_forever()
+
+    def _load_last_conifguration(self):
+        try:
+            with open(constant_values.LAST_CONFIG_PATH, 'r') as file:
+                return json.load(file)
+        except io.UnsupportedOperation:
+            print("Could not load last configration file")
+            return None
 
     def _load_initial_configuration(self):
-        with open("configuration/base_config.json") as configuration_file:
+        with open(constant_values.BASE_CONFIG_PATH) as configuration_file:
             self._configuration = json.load(configuration_file)
 
     @staticmethod
@@ -46,7 +62,7 @@ class ConfigurationReceiver(socketserver.TCPServer):
             try:
                 response = requests.post(url, data=json.dumps(payload), headers=headers)
                 return response.status_code
-            except requests.ConnectionError as e:
+            except requests.ConnectionError:
                 print("Could not connect to server. Trying again...")
                 time.sleep(5)
 

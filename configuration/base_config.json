@@ -1,16 +1,15 @@
 {
-  "SERVER_IP":"153.19.214.145",
-  "SERVER_PORT":"22",
+  "SERVER_IP":"127.0.0.1",
+  "SERVER_PORT":"13000",
 
   "HOSTNAME":"artur_komp",
   "TYPE":"cluster_machine",
-  "HOST_IP":"192.168.0.103",
-  "HOST_PORT":"13000",
+  "HOST_IP":"192.168.1.4",
+  "HOST_PORT":"12000",
 
   "MONITORED_PROPERTIES":{
     "cpu_usage":"%",
     "ram_usage":"MB",
-    "hostname":"string",
     "free_disk_space":"MB"
   }
 
