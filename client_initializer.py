@@ -11,6 +11,8 @@ from data_sender import DataSender
 from configuration_receiving_handler import ConfigurationReceiverHandler
 from hardware_data_collector import HardwareDataCollector
 from utils import utils_functions
+from threading import Thread
+from interrupt_handler import InterruptHandler
 
 
 class ConfigurationReceiver(socketserver.TCPServer):
@@ -20,20 +22,32 @@ class ConfigurationReceiver(socketserver.TCPServer):
                                       self._configuration['SERVER_PORT'],
                                       self._configuration['HOSTNAME'])
 
+        self.allow_reuse_address = True
         socketserver.TCPServer.__init__(self, ("", int(self._configuration['HOST_PORT'])), ConfigurationReceiverHandler)
 
     def run(self):
+        interrupt_handler = InterruptHandler()
+        interrupt_handler.register_interrupt_handler()
+
         if os.path.isfile(constant_values.LAST_CONFIG_PATH):
             if utils_functions.yes_no_prompt(constant_values.LAST_CONFIG_PROMPT) is True:
                 configuration = self._load_last_conifguration()
                 if configuration is not None:
                     self.data_sender.start_sending_data(configuration)
-                    self.serve_forever()
+                    interrupt_handler.set_tcp_server(self)
+                    self._start_serving_thread()
+                    return
         else:
             os.remove(constant_values.LAST_CONFIG_PATH)
 
         self.register_on_server(self._configuration)
-        self.serve_forever()
+        interrupt_handler.set_tcp_server(self)
+        self._start_serving_thread()
+
+    def _start_serving_thread(self):
+        serving_thread = Thread(target=self.serve_forever)
+        serving_thread.start()
+        serving_thread.join()
 
     def _load_last_conifguration(self):
         try:

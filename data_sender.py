@@ -21,18 +21,19 @@ class DataSender:
         self._interrupt_event = Event()
         self._sending_thread = Thread(target=self._send_status_data, kwargs={"configuration": configuration,
                                                                              "interrupt_event": self._interrupt_event})
+        self._sending_thread.daemon = True
         self._sending_thread.start()
 
     def _send_status_data(self, interrupt_event, configuration):
         parameters = " ".join(configuration['monitoring_parameters'])
         interval = int(configuration['probing_interval'])
 
-        time_difference=0
+        time_difference = 0
         while not interrupt_event.wait(max(interval - time_difference, 0)):
             start_time = time.time()
             utils_functions.write_to_pipe(self.command_pipe, parameters)
             status_data = utils_functions.read_from_pipe(self.result_pipe)
-            print(time.time(), status_data)
+            print(int(time.time()), status_data)
 
             url, headers, payload = self._form_status_data_request(status_data)
             try:
