@@ -2,12 +2,15 @@
 {% load staticfiles %}
 {% block title %}APS - Client Details{% endblock %}
 {% block head %}
-    <meta http-equiv="refresh" content="5; {% url 'aps:ClientDetails' client.pk%}">
     <script type="text/javascript" src="{% static "acquisition_presentation_server/js/jquery-3.1.1.min.js" %}"></script>
-    <script type="text/javascript" src="{% static 'acquisition_presentation_server/js/Chart.min.js' %}"></script>
-    <script type="text/javascript">
-        // Collecting initial data from server
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+    <script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+    <script type="text/javascript" src="{% static "acquisition_presentation_server/js/chart_utitlities.js" %}"></script>
 
+    <script type="text/javascript">
+        var charts = {};
+        var chart_datasets = {{ monitoring_data | safe }};
+        var timestamp = {{ timestamp }};
     </script>
 {% endblock %}
 {% block content %}
@@ -22,38 +25,57 @@
         <div class="col-lg-6"><span class="accent">Probing interval: </span> {{ client.probing_interval }}</div >
     </div>
     <div class="panel panel-default">
-        <div id="client_chart{{ client.pk }}" class="panel-body"></div>
+        <div id="client_charts" class="panel-body"></div>
         <script type="text/javascript">
             $(document).ready(function() {
-                var container = $("#client_chart{{ client.pk }}").get(0);
-                var data_json= {{ monitoring_data | safe}};
-                var time = data_json["unix_time"];
-                var data = data_json["data"];
-                for (var data_unit in data){
-                    var chart_canvas = document.createElement("canvas");
-                    chart_canvas.setAttribute("style", "max-height: 300px; width: 100%;")
-                    var ctx = chart_canvas.getContext("2d");
-                    container.appendChild(chart_canvas);
-                    var data_arr = data[data_unit];
-                    new Chart(ctx, { type: "line", data: {
-                        labels: time,
-                        datasets: [{
-                            label: data_unit,
-                            data: data_arr,
-                            tension: 0,
-                            backgroundColor: 'rgba(0, 50,200,0.1)'
-
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false
-                    }
-                    });
-
+                for(var data_entry in chart_datasets["data"]) {
+                    var data_json = chart_datasets["data"][data_entry];
+                    var element = document.createElement("div");
+                    element.setAttribute("id", data_entry);
+                    document.getElementById("client_charts").appendChild(element);
+                    charts[data_entry] = create_chart("#" + data_entry,
+                            data_json,
+                            chart_datasets["unix_time"]
+                    );
                 }
             })
         </script>
     </div>
 </div>
+<script type="text/javascript" src="{% static 'acquisition_presentation_server/js/chartist.min.js' %}"></script>
+<script type="text/javascript">
+function updateCharts() {
+    $.ajax({
+        url : "{% url 'aps:UpdateCharts' %}", // the endpoint
+        type : "POST", // http method
+        data : {
+            client_pks : JSON.stringify([{{ client.pk }}]),
+            most_recent_timestamp : timestamp
+        }, // data sent with the post request
+
+        // handle a successful response
+        success : function(json) {
+            timestamp = json["timestamp"];
+            var monitoring_data = json["monitoring_data"][{{ client.pk}}];
+            for(var data_entry in monitoring_data["data"]) {
+                var chart = charts[data_entry];
+                update_chart(chart,
+                        monitoring_data["data"][data_entry],
+                        monitoring_data["unix_time"]
+                );
+            }
+        },
+
+        // handle a non-successful response
+        error : function(xhr,errmsg,err) {
+            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+
+                " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
+            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+        }
+    });
+}
+ $(document).ready(function() {
+    setInterval(updateCharts, ({{ update_ratio_seconds }}) * 1000);
+})
+</script>
 {% endblock %}

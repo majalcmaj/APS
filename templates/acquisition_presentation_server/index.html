@@ -3,13 +3,17 @@
 {% block title %}APS - Clients{% endblock %}
 {% block head %}
     <script type="text/javascript" src="{% static "acquisition_presentation_server/js/jquery-3.1.1.min.js" %}"></script>
-    <script type="text/javascript" src="{% static 'acquisition_presentation_server/js/Chart.min.js' %}"></script>
+    <link rel="stylesheet" href ="{% static 'acquisition_presentation_server/css/chartist.min.css' %}" />
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+    <script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+    <script type="text/javascript" src="{% static "acquisition_presentation_server/js/chart_utitlities.js" %}"></script>
     <script type="text/javascript">
         // Collecting initial data for charts from server
         var charts = {};
         var clients_visible = [];
         var chart_datasets = {{ monitoring_data | safe }};
         var timestamp = {{ timestamp }};
+        var monitored_parameter_name = "cpu_usage";
     </script>
 {% endblock %}
 {% block content %}
@@ -39,36 +43,13 @@
                             <script type="text/javascript">
                                 $(document).ready(function() {
                                     //Append client pk to visible clients - used on chart updating
-                                    clients_visible.push("{{ client.pk }}");
-                                    var container = $("#client_chart{{ client.pk }}").get(0);
-                                    var data_json= chart_datasets["{{ client.pk }}"];
-                                    console.log("DATA JSON::: " + chart_datasets)
-                                    var time = data_json["unix_time"];
-                                    var data_arr = data_json["data"]["cpu_usage"];
-                                    var chart_canvas = document.createElement("canvas");
-                                    var ctx = chart_canvas.getContext("2d");
-                                    container.appendChild(chart_canvas);
-                                    charts["{{ client.pk }}"] = new Chart(ctx, { type: "line", data: {
-                                        labels: time,
-                                        datasets: [{
-                                            label: "Cpu usage [%]",
-                                            data: data_arr,
-                                            tension: 0,
-                                            backgroundColor: 'rgba(0, 50,200,0.1)'
-
-                                        }
-                                        ]
-                                    },
-                                    options: {
-                                        responsive: true,
-                                        maintainAspectRatio: false,
-                                        animation: false,
-                                        scaleOverride: true,
-                                        scaleStartValue: 0,
-                                        scaleStepWidth: 1,
-                                        scaleSteps: 30
-                                    }
-                                    });
+                                    var pk = {{ client.pk }}
+                                    clients_visible.push(pk);
+                                    var data_json = chart_datasets[pk];
+                                    charts[pk] = create_chart("#client_chart" + pk,
+                                            data_json["data"][monitored_parameter_name],
+                                            data_json["unix_time"]
+                                    );
                                 })
                             </script>
                         </div>
@@ -79,9 +60,8 @@
     {% endfor %}
 </div>
 <script type="text/javascript">
-//Chart content updater
 function updateCharts() {
-       $.ajax({
+    $.ajax({
         url : "{% url 'aps:UpdateCharts' %}", // the endpoint
         type : "POST", // http method
         data : {
@@ -93,24 +73,13 @@ function updateCharts() {
         success : function(json) {
             timestamp = json["timestamp"];
             var monitoring_data = json["monitoring_data"];
-            for(var pk in monitoring_data) {
+            for (var pk in monitoring_data) {
                 var chart = charts[pk];
-                console.log("charts: " + chart instanceof Chart);
-                var current_data = chart.data.datasets[0].data;
-                var new_data = monitoring_data[pk]["data"]["cpu_usage"];
-                new_data.forEach(function(record) {
-                    current_data.shift();
-                    current_data.push(record);
-                    console.log(record);
-                });
-{#                var current_time = chart.data.labels;#}
-{#                for(var label in monitoring_data[pk]["unix_time"]) {#}
-{#                    current_time.shift();#}
-{#                    current_time.push(label);#}
-{#                }#}
-                chart.update();
+                update_chart(chart,
+                        monitoring_data[pk]["data"][monitored_parameter_name],
+                        monitoring_data[pk]["unix_time"]
+                );
             }
-            console.log("success"); // another sanity check
         },
 
         // handle a non-successful response
@@ -121,6 +90,8 @@ function updateCharts() {
         }
     });
 }
-window.onload(setInterval(updateCharts, {{ update_ratio_seconds }} * 1000));
+ $(document).ready(function() {
+    setInterval(updateCharts, ({{ update_ratio_seconds }}) * 1000);
+})
 </script>
 {% endblock %}
