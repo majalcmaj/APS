@@ -23,3 +23,12 @@ def get_free_disk_space():
 
 def get_not_found_parameter():
     return "not found"
+
+
+def get_lumel_time(lumel):
+    response = lumel.send_command(lumel.form_command(1,3,4045,1))
+    return str(lumel.extrac_register_data_from_response(response,1,'int')[0])
+
+def get_lumel_current(lumel):
+    response = lumel.send_command(lumel.form_command(1, 3, 7559, 1))
+    return str(round(lumel.extrac_register_data_from_response(response, 1, 'float')[0],2))
