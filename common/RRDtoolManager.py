@@ -2,6 +2,7 @@ import rrdtool
 import time
 
 from acquisition_presentation_server import settings
+from acquisition_presentation_server.models import Client
 
 
 class RRDtoolManager:
@@ -10,6 +11,7 @@ class RRDtoolManager:
         self._hostname = client.hostname
         self._monitored_properties = {property.name: property.type for property in client.monitored_properties.all()}
         self._probing_interval = client.probing_interval
+        self._client_pk = client.pk
 
     def create_rrd(self):
         rrd_database_name = self._get_rrd_abs_path()
@@ -65,35 +67,19 @@ class RRDtoolManager:
     def _get_rrd_abs_path(self):
         return self._path + "/" + self._hostname + ".rrd"
 
-    #TODO: To trzeba poprawić dobrze. Nie mam pojęcia jak, moje tymczasowe rozwiązanie jest do dupy.
     def fetch_data(self, time_period):
         rrd_database_name = self._get_rrd_abs_path()
+        records = rrdtool.fetch(rrd_database_name, 'AVERAGE', '--start', str(int(time.time()) - time_period))
+        start, end, step = records[0]
+        times = list(range(start, end, step))
+        client = Client.objects.get(pk=self._client_pk)
+        record_omits = 2 if client.last_update < times[-1] else 1
 
-        current_time = int(time.time())
-        records = rrdtool.fetch(rrd_database_name, 'LAST', '--start', str(current_time - time_period))
         result = {}
+        result['unix_time'] = times[:-record_omits]
         data = result['data'] = {}
         order = records[1]
-        data_tuples = records[2]
-        data_tuples = list(filter(lambda tup: None not in tup, data_tuples))
-        start_time = records[0][0]
-        interval = records[0][2]
-        unix_times = [start_time + i * interval for i in range(0, len(data_tuples))]
-        result['unix_time'] = unix_times
-        last_not_null_time = unix_times[-1]
         for i in range(0, len(order)):
-            data[order[i]] = [value[i] for value in data_tuples]
-
-        return result, last_not_null_time
-        # rrd_database_name = self._get_rrd_abs_path()
-        #
-        # current_time = int(time.time())
-        # records = rrdtool.fetch(rrd_database_name, 'LAST', '--start', str(current_time - time_period), '--end',
-        #                         str(current_time))
-        # result = {}
-        # result['unix_time'] = [current_time - time_period + i for i in range(1, len(records[2]) + 1)]
-        # data = result['data'] = {}
-        # order = records[1]
-        # for i in range(0, len(order)):
-        #     data[order[i]] = [value[i] for value in records[2]]
-        # return result
+            data[order[i]] = [value[i] for value in records[2]]
+            data[order[i]] = data[order[i]][:-record_omits]
+        return result,times[-1]
