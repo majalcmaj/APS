@@ -3,9 +3,7 @@
 {% block title %}APS - Client Details{% endblock %}
 {% block head %}
     <script type="text/javascript" src="{% static "acquisition_presentation_server/js/jquery-3.1.1.min.js" %}"></script>
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
-    <script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
-    <script type="text/javascript" src="{% static "acquisition_presentation_server/js/chart_utitlities.js" %}"></script>
+    {%  include 'acquisition_presentation_server/utils/includes_for_charts.html' %}
 
     <script type="text/javascript">
         var charts = {};
@@ -35,14 +33,15 @@
                     document.getElementById("client_charts").appendChild(element);
                     charts[data_entry] = create_chart("#" + data_entry,
                             data_json,
-                            chart_datasets["unix_time"]
+                            chart_datasets["unix_time"],
+                            data_entry,
+                            "unit"
                     );
                 }
             })
         </script>
     </div>
 </div>
-<script type="text/javascript" src="{% static 'acquisition_presentation_server/js/chartist.min.js' %}"></script>
 <script type="text/javascript">
 function updateCharts() {
     $.ajax({

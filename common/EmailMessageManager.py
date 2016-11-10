@@ -11,7 +11,7 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "DjangoSites.settings"
 import django
 django.setup()
 
-from acquisition_presentation_server.models import Client, MonitoredProperties
+from acquisition_presentation_server.models import Client, MonitoredProperty
 #END FOR TESTING PURPOSES
 
 class EmailMessageManager:

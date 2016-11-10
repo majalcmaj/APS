@@ -1,43 +1,67 @@
 {% extends "./skeletons/dashboard.html" %}
 {% block title %}APS - Client Configuration{% endblock %}
 {% block content %}
-<h1>Konfiguracja klienta</h1>
-<div class="content_unit">
-    <h2 style="color: red;">{{ error_message }}</h2>
-        <form method="post" action="{%  url 'aps:ApplyClientConfiguration' %}">
-        {% csrf_token %}
-        <input type="hidden" name="client_pk" value="{{ client.pk }}" />
-
-        <div class="input-group container">
-            <div class="row">
-                <div class="fll col-lg-5 accent">Hostname: </div>
-                <div class="col-lg-5"><input class="form-control" type="text" name="hostname" value="{{ client.hostname }}"/></div >
-            </div>
-            <div class="row">
-               <div class="col-lg-5 accent">IP address: </div >
-                <div class="col-lg-5">{{ client.ip_address }}</div >
-            </div>
-            <div class="row">
-               <div class="col-lg-5 accent">Port:</div >
-                <div class="col-lg-5"><input class="form-control" type="text" name="port" value="{{ client.port }}"/></div >
-            </div>
-            <div class="row">
-               <div class="col-lg-5 accent">Probing interval:</div >
-                <div class="col-lg-5"><input class="form-control" type="text" name="probing_interval" value="{{ client.probing_interval }}"/></div >
-            </div>
-            <div class="row">
-               <div class="col-lg-5 accent">Monitored properties:</div >
-                <div class="col-lg-5">
-                    {% for monitored_property in monitored_properties %}
-                        {{ monitored_property.0 }} [{{ monitored_property.1 }}]
-                        <input type="checkbox" name="monitored_properties[]"
-                               value="{{ monitored_property.0 }}" {{ monitored_property.2 }}/>
-                        <br/>
-                    {%  endfor %}
-                </div >
-            </div>
-        </div>
-        <input type="submit" class="btn btn-warning" value="Configure" />
-    </form>
-</div>
+    <h1>Konfiguracja klienta</h1>
+    <div class="content_unit">
+        <h2 style="color: red;">{{ error_message }}</h2>
+        <form method="post" action="{{ current_url }}">
+            {% csrf_token %}
+            <table class="table">
+                {{ form.as_table }}
+                <tr>
+                    <td>Monitored properties:</td>
+                    <td>
+                        <table class="table">
+                            <tr>
+                                <th>
+                                    Is monitored
+                                </th>
+                                <th>
+                                    Show on dashboard
+                                </th>
+                                <th>
+                                    Property name [unit]
+                                </th>
+                            </tr>
+                            {% for monitored_property in monitored_properties %}
+                                <tr>
+                                <td>
+                                    <input type="checkbox" name="monitored_properties[]"
+                                           value="{{ monitored_property.0 }}" {{ monitored_property.3 }}/></td>
+                                <td>
+                                    <input type="radio" name="show_on_dashboard[]" value="{{ monitored_property.0 }}"/>
+                                </td>
+                                <td>{{ monitored_property.1 }} [{{ monitored_property.2 }}]
+                                <td/>
+                                <td/>
+                            {% endfor %}
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="submit" class="btn btn-warning" value="Configure"/></td>
+                </tr>
+            </table>
+            {#        </div>#}
+        </form>
+    </div>
 {% endblock %}
+{#        <input type="hidden" name="client_pk" value="{{ client.pk }}" />#}
+{##}
+{#        <div class="input-group container">#}
+{#            <div class="row">#}
+{#                <div class="fll col-lg-5 accent">Hostname: </div>#}
+{#                <div class="col-lg-5"><input class="form-control" type="text" name="hostname" value="{{ client.hostname }}"/></div >#}
+{#            </div>#}
+{#            <div class="row">#}
+{#               <div class="col-lg-5 accent">IP address: </div >#}
+{#                <div class="col-lg-5">{{ client.ip_address }}</div >#}
+{#            </div>#}
+{#            <div class="row">#}
+{#               <div class="col-lg-5 accent">Port:</div >#}
+{#                <div class="col-lg-5"><input class="form-control" type="text" name="port" value="{{ client.port }}"/></div >#}
+{#            </div>#}
+{#            <div class="row">#}
+{#               <div class="col-lg-5 accent">Probing interval:</div >#}
+{#                <div class="col-lg-5"><input class="form-control" type="text" name="probing_interval" value="{{ client.probing_interval }}"/></div >#}
+{#            </div>#}

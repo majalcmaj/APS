@@ -1,3 +1,4 @@
+LOGGER_NAME="django"
 RRD_DATABASE_DIRECTORY = "/var/rrddb"
 
 EMAIL_SERVER_ADDRESS = "smtp.gmail.com"

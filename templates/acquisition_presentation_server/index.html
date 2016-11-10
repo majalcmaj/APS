@@ -1,12 +1,9 @@
-{% extends "./skeletons/dashboard.html" %}
+{% extends "acquisition_presentation_server/skeletons/dashboard.html" %}
 {% load staticfiles %}
 {% block title %}APS - Clients{% endblock %}
 {% block head %}
     <script type="text/javascript" src="{% static "acquisition_presentation_server/js/jquery-3.1.1.min.js" %}"></script>
-    <link rel="stylesheet" href ="{% static 'acquisition_presentation_server/css/chartist.min.css' %}" />
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
-    <script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
-    <script type="text/javascript" src="{% static "acquisition_presentation_server/js/chart_utitlities.js" %}"></script>
+    {% include 'acquisition_presentation_server/utils/includes_for_charts.html' %}
     <script type="text/javascript">
         // Collecting initial data for charts from server
         var charts = {};
@@ -17,81 +14,79 @@
     </script>
 {% endblock %}
 {% block content %}
-<div class="container-fluid">
-    {% for client in clients %}
-        <div class="col-lg-4">
-            <a href="{% url 'aps:ClientDetails' client.pk %}" >
-                <div class="panel panel-default">
-                    <div class="panel-heading align_left">
-                        <div class="panel-title">
-
-                            <form class="inline_form" method="get" action="{% url 'aps:ClientConfiguration' client.pk ""%}">
-                                    <button type="submit" value="configure" class="btn btn-default btn-md glyphicon glyphicon-wrench">
+    <div class="container-fluid">
+        {% for client in clients %}
+            <div class="col-lg-4">
+                <a href="{% url 'aps:ClientDetails' client.pk %}" class="nothing_on_hover">
+                    <div class="panel panel-default">
+                        <div class="panel-heading align_left">
+                            <div class="panel-title">
+                                <form class="inline_form" method="get"
+                                      action="{% url 'aps:ClientConfiguration' client.pk "" %}">
+                                    <button type="submit" value="configure"
+                                            class="btn btn-default btn-md glyphicon glyphicon-wrench">
                                     </button>
-                            </form>
-                            <div style="display: inline-block; padding-top: 5px;">
-                                <span class="accent">Hostname</span>
-                                <span>{{ client.hostname }}</span>
+                                </form>
+                                <div style="display: inline-block; padding-top: 5px;">
+                                    <span class="accent">{{ client.hostname }}</span>
+                                    <span> {{ client.ip_address }}:{{ client.port }}</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="panel-body">
-                        <p><span class="accent">IP address</span>{{ client.ip_address }}</p>
-                        <p><span class="accent">Port</span>{{ client.port }}</p>
-                        <div class="panel panel-default">
+                        <div class="panel-body">
                             <div id="client_chart{{ client.pk }}" class="panel-body"></div>
                             <script type="text/javascript">
-                                $(document).ready(function() {
+                                $(document).ready(function () {
                                     //Append client pk to visible clients - used on chart updating
                                     var pk = {{ client.pk }}
-                                    clients_visible.push(pk);
+                                            clients_visible.push(pk);
                                     var data_json = chart_datasets[pk];
                                     charts[pk] = create_chart("#client_chart" + pk,
                                             data_json["data"][monitored_parameter_name],
-                                            data_json["unix_time"]
+                                            data_json["unix_time"],
+                                            'cpu_usage', '%'
                                     );
                                 })
                             </script>
                         </div>
                     </div>
-                </div>
-            </a>
-        </div>
-    {% endfor %}
-</div>
-<script type="text/javascript">
-function updateCharts() {
-    $.ajax({
-        url : "{% url 'aps:UpdateCharts' %}", // the endpoint
-        type : "POST", // http method
-        data : {
-            client_pks : JSON.stringify(clients_visible),
-            most_recent_timestamp : timestamp
-        }, // data sent with the post request
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+    <script type="text/javascript">
+        function updateCharts() {
+            $.ajax({
+                url: "{% url 'aps:UpdateCharts' %}", // the endpoint
+                type: "POST", // http method
+                data: {
+                    client_pks: JSON.stringify(clients_visible),
+                    most_recent_timestamp: timestamp
+                }, // data sent with the post request
 
-        // handle a successful response
-        success : function(json) {
-            timestamp = json["timestamp"];
-            var monitoring_data = json["monitoring_data"];
-            for (var pk in monitoring_data) {
-                var chart = charts[pk];
-                update_chart(chart,
-                        monitoring_data[pk]["data"][monitored_parameter_name],
-                        monitoring_data[pk]["unix_time"]
-                );
-            }
-        },
+                // handle a successful response
+                success: function (json) {
+                    timestamp = json["timestamp"];
+                    var monitoring_data = json["monitoring_data"];
+                    for (var pk in monitoring_data) {
+                        var chart = charts[pk];
+                        update_chart(chart,
+                                monitoring_data[pk]["data"][monitored_parameter_name],
+                                monitoring_data[pk]["unix_time"]
+                        );
+                    }
+                },
 
-        // handle a non-successful response
-        error : function(xhr,errmsg,err) {
-            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+
-                " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
-            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+                // handle a non-successful response
+                error: function (xhr, errmsg, err) {
+                    $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg +
+                            " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
+                    console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+                }
+            });
         }
-    });
-}
- $(document).ready(function() {
-    setInterval(updateCharts, ({{ update_ratio_seconds }}) * 1000);
-})
-</script>
+        $(document).ready(function () {
+            setInterval(updateCharts, ({{ update_ratio_seconds }}) * 1000);
+        })
+    </script>
 {% endblock %}

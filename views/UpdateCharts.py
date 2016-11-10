@@ -9,7 +9,7 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
 from acquisition_presentation_server.common.DataProvider import get_client_data
-from acquisition_presentation_server.models import PendingClient, BlockedClient, Client, MonitoredProperties
+from acquisition_presentation_server.models import PendingClient, BlockedClient, Client, MonitoredProperty
 
 class UpdateCharts(View):
     # TODO: Dodać csrf do ajaxa w index.html
