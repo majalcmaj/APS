@@ -27,22 +27,19 @@
                                 <tr>
                                     <td>
                                         <input type="checkbox" name="monitored_properties[]" class="checkbox"
-                                               value="{{ monitored_property.0 }}" {{ monitored_property.3 }}
-                                               onclick="disable_enable_radio(this, 'radio{{ monitored_property.0 }}')"
-                                                id="checkbox{{ monitored_property.0 }}"/>
+                                               value="{{ monitored_property.pk }}" {{ monitored_property.checked|yesno:"checked," }}
+                                               id="checkbox{{ monitored_property.pk }}"/>
                                     </td>
                                     <td>
-                                        <input type="radio" id="radio{{ monitored_property.0 }}"
+                                        <input type="radio" id="radio{{ monitored_property.pk }}"
                                                name="show_on_dashboard[]"
-                                               value="{{ monitored_property.0 }}" class="radio"/>
-                                        <script type="text/javascript">
-                                            $(document).ready(function() {
-                                                disable_enable_radio(document.getElementById('checkbox{{ monitored_property.0 }}'),
-                                                        "radio{{ monitored_property.0 }}");
-                                            })
-                                        </script>
+                                               value="{{ monitored_property.pk }}" class="radio"
+                                               onclick="on_radio_checked('checkbox{{ monitored_property.pk }}')"
+                                               {{ monitored_property.on_dashboard|yesno:"checked," }}
+                                        />
                                     </td>
-                                    <td>{{ monitored_property.1 }} [{{ monitored_property.2 }}]<td/>
+                                    <td>{{ monitored_property.name }} [{{ monitored_property.type }}]
+                                    <td/>
                                 <tr/>
                             {% endfor %}
                         </table>
@@ -55,9 +52,9 @@
         </form>
     </div>
     <script type="text/javascript">
-        function disable_enable_radio(checkbox, radio_id) {
-            var radio = document.getElementById(radio_id);
-            radio.disabled = !checkbox.checked;
+        function on_radio_checked(checkbox_id) {
+            var checkbox = document.getElementById(checkbox_id);
+            checkbox.checked = true;
         }
     </script>
 {% endblock %}

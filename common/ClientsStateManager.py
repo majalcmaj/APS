@@ -14,11 +14,13 @@ class ClientsStateManager:
             raise ClientsManagerException("Already blocked")
         if len(PendingClient.objects.filter(hostname=client_hostname)) > 0:
             raise ClientsManagerException("Already pending")
+        prop_on_dashboard=None
+
         pending_client = PendingClient(
             hostname=client_hostname,
             ip_address=client_address,
             port=client_port,
-            state=ClientBase.PENDING
+            state=ClientBase.PENDING,
         )
         pending_client.save()
         for monitored_property in monitored_properties.items():

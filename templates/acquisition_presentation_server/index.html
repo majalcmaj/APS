@@ -7,10 +7,9 @@
     <script type="text/javascript">
         // Collecting initial data for charts from server
         var charts = {};
-        var clients_visible = [];
+        var visible_properties_for_clients = {};
         var chart_datasets = {{ monitoring_data | safe }};
         var timestamp = {{ timestamp }};
-        var monitored_parameter_name = "cpu_usage";
     </script>
 {% endblock %}
 {% block content %}
@@ -38,14 +37,14 @@
                             <script type="text/javascript">
                                 $(document).ready(function () {
                                     //Append client pk to visible clients - used on chart updating
-                                    var pk = {{ client.pk }}
-                                            clients_visible.push(pk);
+                                    var pk = {{ client.pk }};
+                                    var name_on_dash = "{{ client.property_on_dashboard.name }}";
+                                    visible_properties_for_clients[{{ client.pk }}] = name_on_dash;
                                     var data_json = chart_datasets[pk];
                                     charts[pk] = create_chart("#client_chart" + pk,
-                                            data_json["data"][monitored_parameter_name],
+                                            data_json["data"][name_on_dash],
                                             data_json["unix_time"],
-                                            'cpu_usage', '%'
-                                    );
+                                            name_on_dash, "{{ client.property_on_dashboard.type }}");
                                 })
                             </script>
                         </div>
@@ -60,7 +59,7 @@
                 url: "{% url 'aps:UpdateCharts' %}", // the endpoint
                 type: "POST", // http method
                 data: {
-                    client_pks: JSON.stringify(clients_visible),
+                    client_pks: JSON.stringify(Object.keys(visible_properties_for_clients)),
                     most_recent_timestamp: timestamp
                 }, // data sent with the post request
 
@@ -68,10 +67,10 @@
                 success: function (json) {
                     timestamp = json["timestamp"];
                     var monitoring_data = json["monitoring_data"];
-                    for (var pk in monitoring_data) {
+                    for (var pk in visible_properties_for_clients) {
                         var chart = charts[pk];
                         update_chart(chart,
-                                monitoring_data[pk]["data"][monitored_parameter_name],
+                                monitoring_data[pk]["data"][visible_properties_for_clients[pk]],
                                 monitoring_data[pk]["unix_time"]
                         );
                     }

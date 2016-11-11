@@ -15,26 +15,26 @@ logger = logging.getLogger(LOGGER_NAME)
 
 
 class ClientsConfigurator:
-    def __init__(self, pk, hostname, probing_interval, monitored_properties):
+    def __init__(self, pk, hostname, probing_interval, monitored_properties, property_for_dashbaord):
         self._pk = pk
         self._hostname = hostname
         self._probing_interval = probing_interval
         self._monitored_properties = monitored_properties
+        self._prop_on_dashboard = property_for_dashbaord
 
     @transaction.atomic
     def send_configuration(self):
         client = Client.objects.get(pk=self._pk)
         client.hostname = self._hostname
         client.probing_interval = int(self._probing_interval)
+        if self._prop_on_dashboard is not None:
+            client.property_on_dashboard = client.monitored_properties.get(
+                pk=self._prop_on_dashboard
+            )
 
         for m in client.monitored_properties.all():
             m.monitored = True if m.pk in self._monitored_properties else False
             m.save()
-        # currently_monitored_pks = set([item.pk for item in list(currently_monitored)])
-        # new_monitored_props = set(self._monitored_properties)
-        # stop_monitoring = currently_monitored_pks - new_monitored_props
-        # start_monitoring = new_monitored_props - currently_monitored_pks
-        # for stop_pk in stop_monitoring:
 
         response = self._send_data_to_client(client)  # throws error when cannot connect
         if response.status_code != 200:

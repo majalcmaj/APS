@@ -16,7 +16,6 @@ function create_chart(element_locator, data_arr, time_arr, title, unit) {
     var labels_to_skip = Math.floor(data_length / 3);
     var options = {
         full_width: true,
-        // high: 100,
         axisX: {
             labelInterpolationFnc: function skipLabels(value, index) {
                 return index % labels_to_skip === 0 ? format_timestamp(value) : null;

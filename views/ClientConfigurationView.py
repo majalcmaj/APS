@@ -30,12 +30,14 @@ class ClientConfigurationView(View):
         # port = request.POST.get('port')
         # probing_interval = request.POST.get('probing_interval')
         monitored_properties = request.POST.getlist('monitored_properties[]')
+        property_for_dashboard = request.POST.get('show_on_dashboard[]')
         if client_conf.is_valid():
             cc = ClientsConfigurator(
                 pk,
                 client_conf.cleaned_data["hostname"],
                 client_conf.cleaned_data["probing_interval"],
-                [int(m) for m in monitored_properties]
+                [int(m) for m in monitored_properties],
+                property_for_dashboard
             )
             redirect_kwargs = {"client_pk": pk}
             try:
@@ -54,8 +56,15 @@ class ClientConfigurationView(View):
         monitored_properies = []
         for property in client.monitored_properties.all():
             monitored_properies.append(
-                (property.pk, property.name, property.type, "checked" if
-                property.monitored else ""))
+                {
+                    "pk": property.pk,
+                    "name": property.name,
+                    "type": property.type,
+                    "checked": property.monitored,
+                    "on_dashboard": property.name == client.property_on_dashboard.name if
+                    client.property_on_dashboard is not None else False
+                }
+            )
 
         return {
             "current_url": request.get_full_path(),
