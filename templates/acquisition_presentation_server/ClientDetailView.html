@@ -3,7 +3,7 @@
 {% block title %}APS - Client Details{% endblock %}
 {% block head %}
     <script type="text/javascript" src="{% static "acquisition_presentation_server/js/jquery-3.1.1.min.js" %}"></script>
-    {%  include 'acquisition_presentation_server/utils/includes_for_charts.html' %}
+    {% include 'acquisition_presentation_server/utils/includes_for_charts.html' %}
 
     <script type="text/javascript">
         var charts = {};
@@ -12,21 +12,21 @@
     </script>
 {% endblock %}
 {% block content %}
-<h1>Szczegóły dot. klienta</h1>
-<div class="content_unit">
-    <div class="row">
-        <div class="fll col-lg-6"><span class="accent">Hostname:</span> {{ client.hostname }}</div>
-        <div class="col-lg-6"><span class="accent">IP address:</span> {{ client.ip_address }}</div >
-    </div>
-    <div class="row">
-        <div class="fll col-lg-6"><span class="accent">Port:</span> {{ client.port }}</div>
-        <div class="col-lg-6"><span class="accent">Probing interval: </span> {{ client.probing_interval }}</div >
-    </div>
-    <div class="panel panel-default">
-        <div id="client_charts" class="panel-body"></div>
+    <h1>Szczegóły dot. klienta</h1>
+    <div class="content_unit">
+        <div class="row">
+            <div class="fll col-lg-6">
+                <span class="accent">{{ client.hostname }} </span>
+                {{ client.ip_address }}:{{ client.port }}
+            </div>
+            <div class="fll col-lg-6">
+                <span class="accent">Probing interval: </span>
+                {{ client.probing_interval }}</div>
+        </div>
+        <div id="client_charts"></div>
         <script type="text/javascript">
-            $(document).ready(function() {
-                for(var data_entry in chart_datasets["data"]) {
+            $(document).ready(function () {
+                for (var data_entry in chart_datasets["data"]) {
                     var data_json = chart_datasets["data"][data_entry];
                     var element = document.createElement("div");
                     element.setAttribute("id", data_entry);
@@ -41,40 +41,39 @@
             })
         </script>
     </div>
-</div>
-<script type="text/javascript">
-function updateCharts() {
-    $.ajax({
-        url : "{% url 'aps:UpdateCharts' %}", // the endpoint
-        type : "POST", // http method
-        data : {
-            client_pks : JSON.stringify([{{ client.pk }}]),
-            most_recent_timestamp : timestamp
-        }, // data sent with the post request
+    <script type="text/javascript">
+        function updateCharts() {
+            $.ajax({
+                url: "{% url 'aps:UpdateCharts' %}", // the endpoint
+                type: "POST", // http method
+                data: {
+                    client_pks: JSON.stringify([{{ client.pk }}]),
+                    most_recent_timestamp: timestamp
+                }, // data sent with the post request
 
-        // handle a successful response
-        success : function(json) {
-            timestamp = json["timestamp"];
-            var monitoring_data = json["monitoring_data"][{{ client.pk}}];
-            for(var data_entry in monitoring_data["data"]) {
-                var chart = charts[data_entry];
-                update_chart(chart,
-                        monitoring_data["data"][data_entry],
-                        monitoring_data["unix_time"]
-                );
-            }
-        },
+                // handle a successful response
+                success: function (json) {
+                    timestamp = json["timestamp"];
+                    var monitoring_data = json["monitoring_data"][{{ client.pk}}];
+                    for (var data_entry in monitoring_data["data"]) {
+                        var chart = charts[data_entry];
+                        update_chart(chart,
+                                monitoring_data["data"][data_entry],
+                                monitoring_data["unix_time"]
+                        );
+                    }
+                },
 
-        // handle a non-successful response
-        error : function(xhr,errmsg,err) {
-            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+
-                " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
-            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+                // handle a non-successful response
+                error: function (xhr, errmsg, err) {
+                    $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg +
+                            " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
+                    console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+                }
+            });
         }
-    });
-}
- $(document).ready(function() {
-    setInterval(updateCharts, ({{ update_ratio_seconds }}) * 1000);
-})
-</script>
+        $(document).ready(function () {
+            setInterval(updateCharts, ({{ update_ratio_seconds }}) * 1000);
+        })
+    </script>
 {% endblock %}

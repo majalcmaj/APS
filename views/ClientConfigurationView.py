@@ -34,7 +34,6 @@ class ClientConfigurationView(View):
             cc = ClientsConfigurator(
                 pk,
                 client_conf.cleaned_data["hostname"],
-                client_conf.cleaned_data["port"],
                 client_conf.cleaned_data["probing_interval"],
                 [int(m) for m in monitored_properties]
             )
@@ -43,7 +42,7 @@ class ClientConfigurationView(View):
                 cc.send_configuration()
             except Exception as e:
                 redirect_kwargs["error_message"] = str(e)
-            return HttpResponseRedirect(request.get_full_path())
+            return HttpResponseRedirect(reverse("aps:ClientConfiguration", kwargs=redirect_kwargs))
         else:
             return render(request, 'acquisition_presentation_server/ClientConfigurationView.html',
                           self._create_context(

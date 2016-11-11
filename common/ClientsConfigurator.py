@@ -13,11 +13,11 @@ from acquisition_presentation_server.settings import LOGGER_NAME
 
 logger = logging.getLogger(LOGGER_NAME)
 
+
 class ClientsConfigurator:
-    def __init__(self, pk, hostname, port, probing_interval, monitored_properties):
+    def __init__(self, pk, hostname, probing_interval, monitored_properties):
         self._pk = pk
         self._hostname = hostname
-        self._port = port
         self._probing_interval = probing_interval
         self._monitored_properties = monitored_properties
 
@@ -25,7 +25,6 @@ class ClientsConfigurator:
     def send_configuration(self):
         client = Client.objects.get(pk=self._pk)
         client.hostname = self._hostname
-        client.port = self._port
         client.probing_interval = int(self._probing_interval)
 
         for m in client.monitored_properties.all():
@@ -36,7 +35,6 @@ class ClientsConfigurator:
         # stop_monitoring = currently_monitored_pks - new_monitored_props
         # start_monitoring = new_monitored_props - currently_monitored_pks
         # for stop_pk in stop_monitoring:
-
 
         response = self._send_data_to_client(client)  # throws error when cannot connect
         if response.status_code != 200:
@@ -61,7 +59,7 @@ class ClientsConfigurator:
 
 class ClientConfigurationException(BaseException):
     def __init__(self, message=None):
-        self._message = "Error durring configuring client" if message is None else message
+        self._message = "Error during configuring client" if message is None else message
         super().__init__(self._message)
 
     @property

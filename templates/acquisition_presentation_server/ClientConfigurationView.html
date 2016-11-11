@@ -4,7 +4,7 @@
     <h1>Konfiguracja klienta</h1>
     <div class="content_unit">
         <h2 style="color: red;">{{ error_message }}</h2>
-        <form method="post" action="{{ current_url }}">
+        <form id="conf_form" method="post" action="{{ current_url }}">
             {% csrf_token %}
             <table class="table">
                 {{ form.as_table }}
@@ -25,15 +25,25 @@
                             </tr>
                             {% for monitored_property in monitored_properties %}
                                 <tr>
-                                <td>
-                                    <input type="checkbox" name="monitored_properties[]"
-                                           value="{{ monitored_property.0 }}" {{ monitored_property.3 }}/></td>
-                                <td>
-                                    <input type="radio" name="show_on_dashboard[]" value="{{ monitored_property.0 }}"/>
-                                </td>
-                                <td>{{ monitored_property.1 }} [{{ monitored_property.2 }}]
-                                <td/>
-                                <td/>
+                                    <td>
+                                        <input type="checkbox" name="monitored_properties[]" class="checkbox"
+                                               value="{{ monitored_property.0 }}" {{ monitored_property.3 }}
+                                               onclick="disable_enable_radio(this, 'radio{{ monitored_property.0 }}')"
+                                                id="checkbox{{ monitored_property.0 }}"/>
+                                    </td>
+                                    <td>
+                                        <input type="radio" id="radio{{ monitored_property.0 }}"
+                                               name="show_on_dashboard[]"
+                                               value="{{ monitored_property.0 }}" class="radio"/>
+                                        <script type="text/javascript">
+                                            $(document).ready(function() {
+                                                disable_enable_radio(document.getElementById('checkbox{{ monitored_property.0 }}'),
+                                                        "radio{{ monitored_property.0 }}");
+                                            })
+                                        </script>
+                                    </td>
+                                    <td>{{ monitored_property.1 }} [{{ monitored_property.2 }}]<td/>
+                                <tr/>
                             {% endfor %}
                         </table>
                     </td>
@@ -42,26 +52,12 @@
                     <td><input type="submit" class="btn btn-warning" value="Configure"/></td>
                 </tr>
             </table>
-            {#        </div>#}
         </form>
     </div>
+    <script type="text/javascript">
+        function disable_enable_radio(checkbox, radio_id) {
+            var radio = document.getElementById(radio_id);
+            radio.disabled = !checkbox.checked;
+        }
+    </script>
 {% endblock %}
-{#        <input type="hidden" name="client_pk" value="{{ client.pk }}" />#}
-{##}
-{#        <div class="input-group container">#}
-{#            <div class="row">#}
-{#                <div class="fll col-lg-5 accent">Hostname: </div>#}
-{#                <div class="col-lg-5"><input class="form-control" type="text" name="hostname" value="{{ client.hostname }}"/></div >#}
-{#            </div>#}
-{#            <div class="row">#}
-{#               <div class="col-lg-5 accent">IP address: </div >#}
-{#                <div class="col-lg-5">{{ client.ip_address }}</div >#}
-{#            </div>#}
-{#            <div class="row">#}
-{#               <div class="col-lg-5 accent">Port:</div >#}
-{#                <div class="col-lg-5"><input class="form-control" type="text" name="port" value="{{ client.port }}"/></div >#}
-{#            </div>#}
-{#            <div class="row">#}
-{#               <div class="col-lg-5 accent">Probing interval:</div >#}
-{#                <div class="col-lg-5"><input class="form-control" type="text" name="probing_interval" value="{{ client.probing_interval }}"/></div >#}
-{#            </div>#}
