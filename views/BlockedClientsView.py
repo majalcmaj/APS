@@ -1,3 +1,5 @@
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls.base import reverse
@@ -7,7 +9,8 @@ from acquisition_presentation_server.common.ClientsStateManager import ClientsSt
 from acquisition_presentation_server.models import PendingClient, BlockedClient
 
 
-class BlockedClientsView(View):
+class BlockedClientsView(LoginRequiredMixin, View):
+    login_url = '/aps/login/'
     def get(self, request, *args, **kwargs):
         blocked_clients = BlockedClient.objects.all()
         context = {"current_url": request.get_full_path(), "blocked_clients": blocked_clients}

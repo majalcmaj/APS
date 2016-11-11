@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models.fields.related import ManyToManyField
 
-from acquisition_presentation_server import settings
+from DjangoSites import settings
 
 
 class ClientBase(models.Model):

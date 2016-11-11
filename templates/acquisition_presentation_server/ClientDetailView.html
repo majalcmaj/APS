@@ -1,4 +1,4 @@
-{% extends "./skeletons/dashboard.html" %}
+{% extends "acquisition_presentation_server/skeletons/base_skeleton.html" %}
 {% load staticfiles %}
 {% block title %}APS - Client Details{% endblock %}
 {% block head %}
@@ -8,7 +8,10 @@
     <script type="text/javascript">
         var charts = {};
         var chart_datasets = {{ monitoring_data | safe }};
-        var timestamp = {{ timestamp }};
+        var pk_last_update = {};
+        var time = chart_datasets["unix_time"];
+        pk_last_update[{{ client.pk }}] = time[time.length - 1];
+        var x = 1 + 2;
     </script>
 {% endblock %}
 {% block content %}
@@ -43,18 +46,18 @@
     </div>
     <script type="text/javascript">
         function updateCharts() {
+            var to_send = JSON.stringify(pk_last_update);
             $.ajax({
                 url: "{% url 'aps:UpdateCharts' %}", // the endpoint
                 type: "POST", // http method
                 data: {
-                    client_pks: JSON.stringify([{{ client.pk }}]),
-                    most_recent_timestamp: timestamp
+                    pk_last_update: to_send
                 }, // data sent with the post request
 
                 // handle a successful response
                 success: function (json) {
-                    timestamp = json["timestamp"];
                     var monitoring_data = json["monitoring_data"][{{ client.pk}}];
+                    pk_last_update = json["pk_last_update"];
                     for (var data_entry in monitoring_data["data"]) {
                         var chart = charts[data_entry];
                         update_chart(chart,

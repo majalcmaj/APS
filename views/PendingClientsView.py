@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls.base import reverse
@@ -7,7 +8,8 @@ from acquisition_presentation_server.common.ClientsStateManager import ClientsSt
 from acquisition_presentation_server.models import PendingClient
 
 
-class PendingClientsView(View):
+class PendingClientsView(LoginRequiredMixin, View):
+    login_url = '/aps/login/'
     def get(self, request, *args, **kwargs):
         pending_clients = PendingClient.objects.all()
         context = {"current_url":request.get_full_path(), "pending_clients":pending_clients}

@@ -1,6 +1,6 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
+from django.contrib.auth import views as auth_views
 
-from acquisition_presentation_server.view import LineChartJSONView, line_chart_json, line_chart
 from acquisition_presentation_server.views.BlockedClientsView import BlockedClientsView
 from acquisition_presentation_server.views.ClientConfigurationView import ClientConfigurationView
 from acquisition_presentation_server.views.ClientDetailsView import ClientDetailsView
@@ -19,10 +19,18 @@ urlpatterns = [
         ClientDetailsView.as_view(), name='ClientDetails'),
     url(r'^PendingClients/$', PendingClientsView.as_view(), name='PendingClients'),
     url(r'^BlockedClients/$', BlockedClientsView.as_view(), name='BlockedClients'),
-    url(r'^line_chart_json/$', line_chart_json,
-        name='line_chart_json'),
-    url(r'^line_chart/$', line_chart,
-        name='line_chart'),
     url(r'^UpdateCharts/$', UpdateCharts.as_view(),
         name='UpdateCharts'),
+    url(r'^login/', auth_views.login,
+        {
+            'template_name': "acquisition_presentation_server/auth/login.html",
+        },
+        name="login",
+        ),
+    url(r'^logout/', auth_views.logout,
+        {
+            'next_page': "/aps/",
+        },
+        name="logout",
+        ),
 ]

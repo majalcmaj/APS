@@ -1,5 +1,6 @@
 import logging
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls.base import reverse
@@ -10,7 +11,8 @@ from acquisition_presentation_server.models import PendingClient, BlockedClient,
 from acquisition_presentation_server.views.forms.ClientConfigurationForm import ClientConfigurationForm
 
 
-class ClientConfigurationView(View):
+class ClientConfigurationView(LoginRequiredMixin, View):
+    login_url = '/aps/login/'
     def get(self, request, *args, **kwargs):
         pk = kwargs['client_pk']
         error = kwargs['error_message']

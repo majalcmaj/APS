@@ -1,4 +1,4 @@
-{% extends "acquisition_presentation_server/skeletons/dashboard.html" %}
+{% extends "acquisition_presentation_server/skeletons/base_skeleton.html" %}
 {% load staticfiles %}
 {% block title %}APS - Clients{% endblock %}
 {% block head %}
@@ -7,9 +7,9 @@
     <script type="text/javascript">
         // Collecting initial data for charts from server
         var charts = {};
+        var pk_last_update = {}
         var visible_properties_for_clients = {};
         var chart_datasets = {{ monitoring_data | safe }};
-        var timestamp = {{ timestamp }};
     </script>
 {% endblock %}
 {% block content %}
@@ -20,16 +20,18 @@
                     <div class="panel panel-default">
                         <div class="panel-heading align_left">
                             <div class="panel-title">
-                                <form class="inline_form" method="get"
-                                      action="{% url 'aps:ClientConfiguration' client.pk "" %}">
-                                    <button type="submit" value="configure"
-                                            class="btn btn-default btn-md glyphicon glyphicon-wrench">
-                                    </button>
-                                </form>
                                 <div style="display: inline-block; padding-top: 5px;">
                                     <span class="accent">{{ client.hostname }}</span>
                                     <span> {{ client.ip_address }}:{{ client.port }}</span>
                                 </div>
+                                {% if user.is_authenticated %}
+                                    <form class="inline_form flr" method="get"
+                                          action="{% url 'aps:ClientConfiguration' client.pk "" %}">
+                                        <button type="submit" value="configure"
+                                                class="btn btn-default btn-md glyphicon glyphicon-wrench">
+                                        </button>
+                                    </form>
+                                {% endif %}
                             </div>
                         </div>
                         <div class="panel-body">
@@ -41,10 +43,12 @@
                                     var name_on_dash = "{{ client.property_on_dashboard.name }}";
                                     visible_properties_for_clients[{{ client.pk }}] = name_on_dash;
                                     var data_json = chart_datasets[pk];
+                                    var time = data_json["unix_time"];
                                     charts[pk] = create_chart("#client_chart" + pk,
                                             data_json["data"][name_on_dash],
-                                            data_json["unix_time"],
+                                            time,
                                             name_on_dash, "{{ client.property_on_dashboard.type }}");
+                                    pk_last_update[pk] = time[time.length - 1];
                                 })
                             </script>
                         </div>
@@ -55,34 +59,33 @@
     </div>
     <script type="text/javascript">
         function updateCharts() {
-            $.ajax({
-                url: "{% url 'aps:UpdateCharts' %}", // the endpoint
-                type: "POST", // http method
-                data: {
-                    client_pks: JSON.stringify(Object.keys(visible_properties_for_clients)),
-                    most_recent_timestamp: timestamp
-                }, // data sent with the post request
+            if (Object.keys(visible_properties_for_clients).length > 0) {
+                $.ajax({
+                    url: "{% url 'aps:UpdateCharts' %}",
+                    type: "POST",
+                    data: {
+                        pk_last_update: JSON.stringify(pk_last_update)
+                    },
 
-                // handle a successful response
-                success: function (json) {
-                    timestamp = json["timestamp"];
-                    var monitoring_data = json["monitoring_data"];
-                    for (var pk in visible_properties_for_clients) {
-                        var chart = charts[pk];
-                        update_chart(chart,
-                                monitoring_data[pk]["data"][visible_properties_for_clients[pk]],
-                                monitoring_data[pk]["unix_time"]
-                        );
+                    success: function (json) {
+                        var monitoring_data = json["monitoring_data"];
+                        pk_last_update = json["pk_last_update"];
+                        for (var pk in visible_properties_for_clients) {
+                            var chart = charts[pk];
+                            update_chart(chart,
+                                    monitoring_data[pk]["data"][visible_properties_for_clients[pk]],
+                                    monitoring_data[pk]["unix_time"]
+                            );
+                        }
+                    },
+
+                    error: function (xhr, errmsg, err) {
+                        $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg +
+                                " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
+                        console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
                     }
-                },
-
-                // handle a non-successful response
-                error: function (xhr, errmsg, err) {
-                    $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg +
-                            " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
-                    console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
-                }
-            });
+                });
+            }
         }
         $(document).ready(function () {
             setInterval(updateCharts, ({{ update_ratio_seconds }}) * 1000);
