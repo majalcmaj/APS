@@ -10,7 +10,7 @@ from acquisition_presentation_server.models import PendingClient
 class PendingClientsView(View):
     def get(self, request, *args, **kwargs):
         pending_clients = PendingClient.objects.all()
-        context = {"current_url":request.get_full_path(), "pending_clients":pending_clients}
+        context = {"current_url": request.get_full_path(), "pending_clients": pending_clients}
         return render(request, 'acquisition_presentation_server/PendingClientsView.html', context)
 
     def post(self, request, *args, **kwargs):
@@ -21,5 +21,6 @@ class PendingClientsView(View):
 
         if request.POST.get('accept'):
             ClientsStateManager.accept_pending_client(pk)
+            return HttpResponseRedirect("/aps/ClientConfiguration/{}".format(pk))
 
         return HttpResponseRedirect(request.get_full_path())

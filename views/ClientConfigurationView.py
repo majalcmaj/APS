@@ -39,7 +39,7 @@ class ClientConfigurationView(View):
             )
             redirect_kwargs = {"client_pk": pk}
             try:
-                cc.send_configuration()
+                cc.apply_configuration()
             except Exception as e:
                 redirect_kwargs["error_message"] = str(e)
             return HttpResponseRedirect(reverse("aps:ClientConfiguration", kwargs=redirect_kwargs))

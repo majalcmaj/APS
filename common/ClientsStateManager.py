@@ -27,6 +27,7 @@ class ClientsStateManager:
                 name=monitored_property[0],
                 type=monitored_property[1],
             ).save()
+        return pending_client.pk
 
     @staticmethod
     @transaction.atomic
@@ -49,6 +50,13 @@ class ClientsStateManager:
         pending_client = BlockedClient.objects.get(pk=pk)
         pending_client.state = ClientBase.MONITORED
         pending_client.save()
+
+    @staticmethod
+    @transaction.atomic
+    def get_client(pk):
+        clients = Client.objects.filter(pk=pk)
+        if len(clients) > 0:
+            return clients[0]
 
 
 class ClientsManagerException(BaseException):
