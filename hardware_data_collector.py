@@ -7,22 +7,27 @@ from lumel_connection import LumelConnection
 
 class HardwareDataCollector:
     @staticmethod
-    def run(command_pipe, result_pipe):
-        lumel = LumelConnection("localhost", 8300)
-        lumel.connect_with_lumel()
+    def run(command_pipe, result_pipe, lumel_monitoring, lumel_ip, lumel_port):
+        if lumel_monitoring:
+            lumel_connection = LumelConnection(lumel_ip, lumel_port)
+            lumel_connection.connect_with_lumel()
+        else:
+            lumel_connection = None
+
         while True:
             try:
                 input_data = utils_functions.read_from_pipe(command_pipe)
                 functions = HardwareDataCollector.map_parameters_onto_functions(input_data.split(" "))
                 result = {}
                 for function in functions:
-                    if (function[0].find("lumel") != -1):
-                        result[function[0]] = function[1](lumel)
+                    if function[0].find("lumel") != -1 and lumel_monitoring:
+                        result[function[0]] = function[1](lumel_connection)
                     else:
                         result[function[0]] = function[1]()
                 utils_functions.write_to_pipe(result_pipe, json.dumps(result))
             except KeyboardInterrupt:
-                lumel.close_connection()
+                if lumel_monitoring:
+                    lumel_connection.close_connection()
                 break
 
     @staticmethod
