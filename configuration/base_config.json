@@ -1,0 +1,19 @@
+{
+  "SERVER_IP": "127.0.0.1",
+  "SERVER_PORT": "13000",
+  "HOSTNAME": "artur_komp",
+  "TYPE": "cluster_machine",
+  "HOST_IP": "192.168.1.4",
+  "HOST_PORT": "12000",
+
+  "MONITORED_PROPERTIES": {
+    "cpu_usage": "%",
+    "ram_usage": "MB",
+    "free_disk_space": "MB",
+    "lumel_time": "t"
+  },
+
+  "LUMEL_MONITORING": true,
+  "LUMEL_IP": "localhost",
+  "LUMEL_PORT": "8300"
+}
