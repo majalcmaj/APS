@@ -22,6 +22,16 @@
                                 <th>
                                     Property name [unit]
                                 </th>
+                                <th>
+                                    Allow Threshold
+                                </th>
+                                <th>
+                                    Threshold value
+                                </th>
+
+                                <th>
+                                    Cycles before action
+                                </th>
                             </tr>
                             {% for monitored_property in monitored_properties %}
                                 <tr>
@@ -38,8 +48,26 @@
                                                {{ monitored_property.on_dashboard|yesno:"checked," }}
                                         />
                                     </td>
-                                    <td>{{ monitored_property.name }} [{{ monitored_property.type }}]
-                                    <td/>
+                                    <td>{{ monitored_property.name }} [{{ monitored_property.type }}]</td>
+
+                                    <td>
+                                        <input type="checkbox" name="allowed_thresholds[]" class="checkbox"
+                                               value="{{ monitored_property.pk }}"
+                                               id="allow_threshold_checkbox{{ monitored_property.pk }}"/>
+                                    </td>
+
+                                    <td>
+                                        <input type="text" name="thresholds_values[]" class="text"
+                                               value="0"
+                                               id="thresholds_values_text{{ monitored_property.pk }}"/>
+                                    </td>
+
+                                    <td>
+                                        <input type="text" name="threshold_cycles[]" class="text"
+                                               value="1"
+                                               id="threshold_cycles_text{{ monitored_property.pk }}"/>
+                                    </td>
+
                                 <tr/>
                             {% endfor %}
                         </table>

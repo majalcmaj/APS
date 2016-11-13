@@ -6,7 +6,7 @@ from django.db import IntegrityError, transaction
 class ClientsStateManager:
     @staticmethod
     @transaction.atomic
-    def register_new_pending_client(client_hostname, client_address, client_port, monitored_properties):
+    def register_new_pending_client(client_hostname, client_address, client_port, monitored_properties,base_probing_interval):
 
         if len(Client.objects.filter(hostname=client_hostname)) > 0:
             raise ClientsManagerException("Already registered")
@@ -20,6 +20,7 @@ class ClientsStateManager:
             hostname=client_hostname,
             ip_address=client_address,
             port=client_port,
+            base_probing_interval=base_probing_interval,
             state=ClientBase.PENDING,
         )
         pending_client.save()

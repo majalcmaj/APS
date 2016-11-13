@@ -17,6 +17,8 @@ class ClientBase(models.Model):
     last_update = models.IntegerField(default=-1)
     state = models.IntegerField(default=PENDING, db_index=True)
     property_on_dashboard = models.ForeignKey("MonitoredProperty", on_delete=models.DO_NOTHING, null=True)
+    configuration_pending = models.BooleanField(default=True)
+    base_probing_interval = models.IntegerField(default=1)
 
     class Meta:
         unique_together = (("ip_address", "port"),)
@@ -39,6 +41,17 @@ class MonitoredProperty(models.Model):
 
     def __str__(self):
         return "{} [{}]".format(str(self.name), str(self.type))
+
+
+class Threshold(models.Model):
+    WARNING = 0
+    EMAIL_NOTIFICATION = 1
+
+    type = models.IntegerField(default=WARNING)
+    value = models.IntegerField()
+    cycles_above_value = models.IntegerField(default=0)
+    max_cycle_above_value = models.IntegerField(default=1)
+    monitored_property = models.ForeignKey(MonitoredProperty, on_delete=models.CASCADE, related_name="thresholds")
 
 
 class Client(ClientBase):

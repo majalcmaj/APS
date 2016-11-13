@@ -13,6 +13,7 @@ from acquisition_presentation_server.views.forms.ClientConfigurationForm import 
 
 class ClientConfigurationView(LoginRequiredMixin, View):
     login_url = '/aps/login/'
+
     def get(self, request, *args, **kwargs):
         pk = kwargs['client_pk']
         error = kwargs['error_message']
@@ -33,14 +34,24 @@ class ClientConfigurationView(LoginRequiredMixin, View):
         # probing_interval = request.POST.get('probing_interval')
         monitored_properties = request.POST.getlist('monitored_properties[]')
         property_for_dashboard = request.POST.get('show_on_dashboard[]')
+
+        allowed_thresholds = request.POST.getlist("allowed_thresholds[]")
+        thresholds_values = request.POST.getlist("thresholds_values[]")
+        threshold_cycles = request.POST.getlist("threshold_cycles[]")
+        thresholds = [(int(i)-1, thresholds_values[int(i)-1], threshold_cycles[int(i)-1]) for i in allowed_thresholds]
+        for threshold in thresholds:
+            print(threshold)
+
         if client_conf.is_valid():
             cc = ClientsConfigurator(
                 pk,
                 client_conf.cleaned_data["hostname"],
-                client_conf.cleaned_data["probing_interval"],
+                client_conf.cleaned_data["probing_cycles"],
                 [int(m) for m in monitored_properties],
-                property_for_dashboard
+                property_for_dashboard,
+                thresholds
             )
+
             redirect_kwargs = {"client_pk": pk}
             try:
                 cc.apply_configuration()

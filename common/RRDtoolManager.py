@@ -13,7 +13,8 @@ class RRDtoolManager:
             prop.name: prop.type
             for prop in client.monitored_properties.filter(monitored=True)
             }
-        self._probing_interval = client.probing_interval
+        self._probing_cycles = client.probing_interval
+        self._base_probing_interval = client.base_probing_interval
         self._client_pk = client.pk
 
     def create_rrd(self):
@@ -22,7 +23,8 @@ class RRDtoolManager:
             monitoring_parameters = []
             for k, v in self._monitored_properties.items():
                 if v != 'string':
-                    monitoring_parameters.append("DS:" + k + ":GAUGE:" + str(2 * self._probing_interval) + ":U:U")
+                    monitoring_parameters.append(
+                        "DS:" + k + ":GAUGE:" + str(2 * self._probing_cycles * self._base_probing_interval) + ":U:U")
 
             rrd_archives = []
             rrd_archives.append("RRA:AVERAGE:0.5:1:120")
@@ -32,7 +34,7 @@ class RRDtoolManager:
             command.append('--start')
             command.append(str(int(time.time())))
             command.append('--step')
-            command.append(str(self._probing_interval))
+            command.append(str(self._probing_cycles * self._base_probing_interval))
 
             for monitoring_parameter in monitoring_parameters:
                 command.append(monitoring_parameter)

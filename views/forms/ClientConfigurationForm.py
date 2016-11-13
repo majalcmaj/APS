@@ -4,7 +4,8 @@ from django import forms
 class ClientConfigurationForm(forms.Form):
     hostname = forms.CharField(max_length=30, required=True, label="Hostname")
     ip_port = forms.CharField(label="Client IP", disabled=True, required=False)
-    probing_interval = forms.IntegerField(min_value=1, required=True)
+    base_probing_interval = forms.CharField(disabled=True,required=False)
+    probing_cycles = forms.IntegerField(min_value=1, required=True)
 
     #monitored_properties = forms.MultipleChoiceField(choices=[])
     #
@@ -20,7 +21,8 @@ class ClientConfigurationForm(forms.Form):
         initial = {
             "hostname": client.hostname,
             "ip_port": "{}:{}".format(client.ip_address, client.port),
-            "probing_interval": client.probing_interval,
+            "base_probing_interval": client.base_probing_interval,
+            "probing_cycles": client.probing_interval,
             #"monitored_properties": [mp.pk for mp in client.monitored_properties.filter(monitored=True)]
         }
         return cls(initial=initial)
