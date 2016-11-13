@@ -10,20 +10,19 @@ from django.http.response import HttpResponseServerError
 from acquisition_presentation_server.common.RRDtoolManager import RRDtoolManager
 from acquisition_presentation_server.models import Client, MonitoredProperty
 from acquisition_presentation_server.settings import LOGGER_NAME
-from ..models import ClientBase,Threshold,MonitoredProperty
+from ..models import ClientBase, Threshold, MonitoredProperty
 
 logger = logging.getLogger(LOGGER_NAME)
 
 
 class ClientsConfigurator:
     def __init__(self, pk, hostname, probing_cycles, monitored_properties,
-                 property_for_dashbaord,thresholds):
+                 property_for_dashbaord):
         self._pk = pk
         self._hostname = hostname
         self._probing_cycles = probing_cycles
         self._monitored_properties = monitored_properties
         self._prop_on_dashboard = property_for_dashbaord
-        self._thresholds = thresholds
 
     @transaction.atomic
     def apply_configuration(self):
@@ -38,21 +37,21 @@ class ClientsConfigurator:
             )
 
         for m in client.monitored_properties.all():
-            m.thresholds.all().delete()
+            # m.thresholds.all().delete()
             m.monitored = True if m.pk in self._monitored_properties else False
             m.save()
 
-        for t in self._thresholds:
-            threshold = Threshold(type = 1,
-                                  value = t[1],
-                                  max_cycle_above_value=t[2],
-                                  monitored_property=MonitoredProperty.objects.get(pk=t[0]+1))
-            threshold.save()
-
-        for m in MonitoredProperty.objects.all():
-            print(m.pk,end=' ')
-            for t in m.thresholds.all():
-                print(t.type,t.value)
+        # for t in self._thresholds:
+        #     threshold = Threshold(type = 1,
+        #                           value = t[1],
+        #                           max_cycle_above_value=t[2],
+        #                           monitored_property=MonitoredProperty.objects.get(pk=t[0]+1))
+        #     threshold.save()
+        #
+        # for m in MonitoredProperty.objects.all():
+        #     print(m.pk,end=' ')
+        #     for t in m.thresholds.all():
+        #         print(t.type,t.value)
 
 
         client.is_configured = True

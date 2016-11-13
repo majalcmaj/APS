@@ -43,6 +43,14 @@
                 }
             })
         </script>
+        <div>
+            {% if user.is_authenticated %}
+                <form method="get" action="{% url 'aps:ClientConfiguration' client.pk "" %}">
+                    <button type="submit" value="configure"
+                            class="btn btn-warning">Configure</button>
+                </form>
+            {% endif %}
+        </div>
     </div>
     <script type="text/javascript">
         function updateCharts() {

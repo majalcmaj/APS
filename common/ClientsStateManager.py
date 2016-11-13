@@ -7,14 +7,14 @@ class ClientsStateManager:
     @staticmethod
     @transaction.atomic
     def register_new_pending_client(client_hostname, client_address, client_port, monitored_properties,base_probing_interval):
-
+        # TODO
         if len(Client.objects.filter(hostname=client_hostname)) > 0:
             raise ClientsManagerException("Already registered")
         if len(BlockedClient.objects.filter(hostname=client_hostname)) > 0:
             raise ClientsManagerException("Already blocked")
         if len(PendingClient.objects.filter(hostname=client_hostname)) > 0:
             raise ClientsManagerException("Already pending")
-        prop_on_dashboard=None
+        prop_on_dashboard = None
 
         pending_client = PendingClient(
             hostname=client_hostname,
@@ -46,7 +46,6 @@ class ClientsStateManager:
         pending_client.state = ClientBase.BLOCKED
         pending_client.save()
 
-
     @staticmethod
     @transaction.atomic
     def accept_blocked_client(pk):
@@ -60,6 +59,11 @@ class ClientsStateManager:
         clients = Client.objects.filter(pk=pk)
         if len(clients) > 0:
             return clients[0]
+
+    @staticmethod
+    def remove_client(pk):
+        client = Client.objects.get(pk=pk)
+        client.delete()
 
 
 class ClientsManagerException(BaseException):

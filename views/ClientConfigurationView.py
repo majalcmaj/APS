@@ -35,12 +35,12 @@ class ClientConfigurationView(LoginRequiredMixin, View):
         monitored_properties = request.POST.getlist('monitored_properties[]')
         property_for_dashboard = request.POST.get('show_on_dashboard[]')
 
-        allowed_thresholds = request.POST.getlist("allowed_thresholds[]")
-        thresholds_values = request.POST.getlist("thresholds_values[]")
-        threshold_cycles = request.POST.getlist("threshold_cycles[]")
-        thresholds = [(int(i)-1, thresholds_values[int(i)-1], threshold_cycles[int(i)-1]) for i in allowed_thresholds]
-        for threshold in thresholds:
-            print(threshold)
+        # allowed_thresholds = request.POST.getlist("allowed_thresholds[]")
+        # thresholds_values = request.POST.getlist("thresholds_values[]")
+        # threshold_cycles = request.POST.getlist("threshold_cycles[]")
+        # thresholds = [(int(i)-1, thresholds_values[int(i)-1], threshold_cycles[int(i)-1]) for i in allowed_thresholds]
+        # for threshold in thresholds:
+        #     print(threshold)
 
         if client_conf.is_valid():
             cc = ClientsConfigurator(
@@ -49,7 +49,6 @@ class ClientConfigurationView(LoginRequiredMixin, View):
                 client_conf.cleaned_data["probing_cycles"],
                 [int(m) for m in monitored_properties],
                 property_for_dashboard,
-                thresholds
             )
 
             redirect_kwargs = {"client_pk": pk}
@@ -75,11 +74,13 @@ class ClientConfigurationView(LoginRequiredMixin, View):
                     "type": property.type,
                     "checked": property.monitored,
                     "on_dashboard": property.name == client.property_on_dashboard.name if
-                    client.property_on_dashboard is not None else False
+                    client.property_on_dashboard is not None else False,
+                    "thresholds": property.thresholds.all()
                 }
             )
 
         return {
+            "client_pk": client.pk,
             "current_url": request.get_full_path(),
             "form": ClientConfigurationForm.from_client(client) if client_form is None else client_form,
             "monitored_properties": monitored_properies

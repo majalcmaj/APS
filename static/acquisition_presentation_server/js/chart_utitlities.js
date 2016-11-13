@@ -15,10 +15,11 @@ function create_chart(element_locator, data_arr, time_arr, title, unit) {
     var data_length = time_arr.length;
     var labels_to_skip = Math.floor(data_length / 3);
     var options = {
-        full_width: true,
+        fullWidth: true,
         axisX: {
             labelInterpolationFnc: function skipLabels(value, index) {
-                return index % labels_to_skip === 0 ? format_timestamp(value) : null;
+                return ((index % labels_to_skip === 0 && index <= data_length - labels_to_skip) ||
+                index === data_length-1) ? format_timestamp(value) : null;
             }
         },
         showPoint: false,

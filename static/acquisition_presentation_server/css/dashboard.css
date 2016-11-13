@@ -148,3 +148,17 @@ body {
     text-decoration: none;
     color: #1b809e;
 }
+
+.ct-label.ct-horizontal.ct-end {
+    transform: translate(-50%,0);
+    display: block;
+    text-align: center;
+}
+
+.ct-series-a .ct-line {
+  /* Set the colour of this series line */
+  stroke: blue;
+  /* Control the thikness of your lines */
+  stroke-width: 2px;
+  /* Create a dashed line with a pattern */
+}

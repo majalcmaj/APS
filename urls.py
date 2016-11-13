@@ -7,6 +7,7 @@ from acquisition_presentation_server.views.ClientDetailsView import ClientDetail
 from acquisition_presentation_server.views.IndexView import IndexView
 from acquisition_presentation_server.views.JsonRequestView import JsonRequestView
 from acquisition_presentation_server.views.PendingClientsView import PendingClientsView
+from acquisition_presentation_server.views.ThresholdConfigurationView import ThresholdConfigurationView
 from acquisition_presentation_server.views.UpdateCharts import UpdateCharts
 
 app_name = 'aps'
@@ -33,4 +34,6 @@ urlpatterns = [
         },
         name="logout",
         ),
+    url(r'^ThresholdConfiguration$',
+        ThresholdConfigurationView.as_view(), name='ThresholdConfiguration'),
 ]
