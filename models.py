@@ -54,6 +54,13 @@ class Threshold(models.Model):
     monitored_property = models.ForeignKey(MonitoredProperty, on_delete=models.CASCADE, related_name="thresholds")
 
 
+class Alert(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    message = models.TextField()
+    client = models.ForeignKey(ClientBase, on_delete=models.CASCADE, related_name="alerts")
+    threshold = models.ForeignKey(Threshold, on_delete=models.DO_NOTHING, related_name="alerts")
+
+
 class Client(ClientBase):
     class Manager(models.Manager):
         def get_queryset(self):
