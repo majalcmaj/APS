@@ -42,7 +42,7 @@ class JsonRequestView(View):
                     ClientsConfigurator.change_client_configuration_status(int(json_data['key']), False)
                     return JsonResponse({"result": "success", "configuration": configuration})
                 else:
-                    ManageMonitoringData.process_data(request.META['REMOTE_ADDR'], json_data['monitored_properties'])
+                    ManageMonitoringData.process_data(client, json_data['monitored_properties'])
                     return JsonResponse({"result": "success"})
 
             elif json_data['message'] == 'get_client_configuration':
