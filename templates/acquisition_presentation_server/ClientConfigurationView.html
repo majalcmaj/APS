@@ -1,5 +1,9 @@
 {% extends "acquisition_presentation_server/skeletons/base_skeleton.html" %}
+{% load static %}
 {% block title %}APS - Client Configuration{% endblock %}
+{% block head %}
+    <script type="text/javascript"
+            src="{% static "acquisition_presentation_server/js/jquery-3.1.1.min.js" %}"></script>{% endblock %}
 {% block content %}
     <h1 xmlns="http://www.w3.org/1999/html">Konfiguracja klienta</h1>
     <div class="content_unit">
@@ -89,100 +93,107 @@
                 </script>
             </div>
             <div role="tabpanel" class="tab-pane" id="threshold_configuration">
-
                 <table class="table">
-                    <tr>
-                        <th></th>
-                        <table>
-                            <tr>
-                                <th>Threshold value</th>
-                                <th>Cycles of value exceeded<br/>before activation</th>
-                                <th>Type</th>
-                            </tr>
-                        </table>
-
-                    </tr>
                     {% for monitored_property in monitored_properties %}
                         {% if monitored_property.checked %}
-                            <tr>
-                                <td>{{ monitored_property.name }}</td>
 
+                            <tr style="background-color: #9acfea">
+                                <th>{{ monitored_property.name }}
+
+                                </th>
+                                <td></td>
+                                <td></td>
                                 <td>
-                                    <form method="post"
-                                          action="{% url "aps:ThresholdConfiguration" %}">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="client_pk" value="{{ client_pk }}"/>
-                                        <table>
-                                            {% for threshold in monitored_property.thresholds %}
-                                                <tr>
-                                                    <td>
-                                                        {{ threshold.value }}
-                                                    </td>
-                                                    <td>
-                                                        {{ threshold.max_cycle_above_value }}
-                                                    </td>
-                                                    <td>
-                                                        {{ threshold.type }}
-                                                    </td>
-                                                    <td>
-                                                        <button type="submit" class="btn btn-default float-right"
-                                                                name="delete_{{ threshold.pk }}">
-                                                            <span class="glyphicon glyphicon-minus"></span>
-                                                        </button>
-
-                                                    </td>
-
-                                                </tr>
-                                            {% endfor %}
-
-                                            <tr>
-                                                <td>
-                                                    <input type="hidden" name="mp_pk"
-                                                           value="{{ monitored_property.pk }}"/>
-                                                    <input type="text" name="threshold_value"/>
-                                                </td>
-                                                <td>
-                                                    <input type="text" name="threshold_cycles"/>
-                                                </td>
-                                                <td>
-                                                    <input type="text" name="threshold_type"/>
-                                                </td>
-                                                <td>
-                                                    <button type="submit" class="btn btn-default float-right"
-                                                            name="add_threshold"
-                                                            value="add_threshold">
-                                                        <span class="glyphicon glyphicon-plus"></span>
-                                                    </button>
-                                                </td>
-
-                                            </tr>
-
-
-                                        </table>
-                                    </form>
+                                    <button type="button" class="btn btn-primary float-right" data-toggle="modal"
+                                            data-target="#triggerAddModal" data-mp_pk="{{ monitored_property.pk }}">
+                                        <span class="glyphicon glyphicon-plus"></span>
+                                    </button>
                                 </td>
                             </tr>
-
-                            {#                            <td>#}
-                            {#                                                <input type="checkbox" name="allowed_thresholds[]" class="checkbox"#}
-                            {#                                                       value="{{ monitored_property.pk }}"#}
-                            {#                                                       id="allow_threshold_checkbox{{ monitored_property.pk }}"/>#}
-                            {#                                            </td>#}
-                            {##}
-                            {#                                            <td>#}
-                            {#                                                <input type="text" name="thresholds_values[]" class="text"#}
-                            {#                                                       value="0"#}
-                            {#                                                       id="thresholds_values_text{{ monitored_property.pk }}"/>#}
-                            {#                                            </td>#}
-                            {##}
-                            {#                                            <td>#}
-                            {#                                                <input type="text" name="threshold_cycles[]" class="text"#}
-                            {#                                                       value="1"#}
-                            {#                                                       id="threshold_cycles_text{{ monitored_property.pk }}"/>#}
-                            {#                                            </td>#}
+                            {% for threshold in monitored_property.thresholds %}
+                                <tr>
+                                    <td>
+                                        {{ threshold.value }}
+                                    </td>
+                                    <td>
+                                        {{ threshold.max_cycle_above_value }}
+                                    </td>
+                                    <td>
+                                        {{ threshold.type }}
+                                    </td>
+                                    <td>
+                                        <form method="post"
+                                              action="{% url "aps:ThresholdConfiguration" %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" value="{{ threshold.pk }}"
+                                                   name="threshold_pk"/>
+                                            <input type="hidden" value="{{ client_pk }}"
+                                                   name="client_pk"/>
+                                            <button type="submit" class="btn btn-danger float-right"
+                                                    value="delete_threshold" name="delete_threshold">
+                                                <span class="glyphicon glyphicon-minus"></span>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
                         {% endif %}
                     {% endfor %}
                 </table>
+                <div class="modal fade" id="triggerAddModal" tabindex="-1" role="dialog"
+                     aria-labelledby="triggerAddModal">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <form method="post" action="{% url "aps:ThresholdConfiguration" %}">
+                                {% csrf_token %}
+                                <div class="modal-body">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                            aria-hidden="true">&times;</span></button>
+                                    <input type="hidden" id="mp_pk" name="mp_pk" title="MP-PK"/>
+                                    <input type="hidden" value="{{ client_pk }}"
+                                           name="client_pk"/>
+                                    <div class="form-group">
+                                        <label for="new_threshold_value" class="control-label">Threshold
+                                            Value:</label><br/>
+                                        <input type="text" id="new_threshold_value" name="threshold_value"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="new_threshold_cycles" class="control-label">Threshold
+                                            Cycles:</label><br/>
+                                        <input type="text" id="new_threshold_cycles" name="threshold_cycles"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="new_threshold_type" class="control-label">Threshold
+                                            Type:</label><br/>
+                                        <input type="text" id="new_threshold_type" name="threshold_type"/>
+                                    </div>
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close
+                                    </button>
+                                    <button type="submit" class="btn btn-success"
+                                            name="add_threshold"
+                                            value="add_threshold">
+                                        Add threshold
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <script type="text/javascript">
+                    $(document).ready(function () {
+                        $('#triggerAddModal').on('show.bs.modal', function (event) {
+                            var button = $(event.relatedTarget);
+                            var mp_pk = button.data('mp_pk');
+                            var modal = $(this);
+                            console.error(mp_pk);
+                            modal.find('#mp_pk').val(mp_pk);
+                        })
+                    });
+                </script>
             </div>
         </div>
     </div>

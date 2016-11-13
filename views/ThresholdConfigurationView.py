@@ -23,14 +23,8 @@ class ThresholdConfigurationView(LoginRequiredMixin, View):
             threshold_type = request.POST.get('threshold_type')
             mp_pk = request.POST.get('mp_pk')
             ThresholdConfigurator.add_threshold(value, cycles, threshold_type, mp_pk)
-        else:
-            to_delete = []
-            for key in request.POST:
-                match = re.match(r"^delete_([0-9]+)", key)
-                if match:
-                    to_delete.append(match.group(1))
-
-            for pk in to_delete:
-                ThresholdConfigurator.delete_threshold(pk)
+        if request.POST.get('delete_threshold'):
+            threshold_pk = request.POST.get("threshold_pk")
+            ThresholdConfigurator.delete_threshold(threshold_pk)
         return HttpResponseRedirect(
             reverse("aps:ClientConfiguration", kwargs={"client_pk": client_pk}))
