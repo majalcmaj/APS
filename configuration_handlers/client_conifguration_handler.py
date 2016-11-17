@@ -6,7 +6,7 @@ import constant_values
 class ClientConfigurationHandler:
     @staticmethod
     def get_client_configuration_from_server(configuration, client_key):
-        url = "http://{}:{}/aps/JsonRequest".format(configuration['SERVER_IP'], configuration['SERVER_PORT'])
+        url = "http://{0}:{1}/aps/JsonRequest".format(configuration['SERVER_IP'], configuration['SERVER_PORT'])
         headers = {"content-type": "aps/json"}
         payload = {"message": "get_client_configuration", "key": client_key}
 
