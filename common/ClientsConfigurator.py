@@ -1,16 +1,10 @@
-import json
 import logging
-from http import client
-from pydoc import cli
 
-import requests
 from django.db import transaction
-from django.http.response import HttpResponseServerError
 
-from acquisition_presentation_server.common.RRDtoolManager import RRDtoolManager
-from acquisition_presentation_server.models import Client, MonitoredProperty
+from acquisition_presentation_server.common import RRDtoolManager
+from acquisition_presentation_server.models import Client
 from acquisition_presentation_server.settings import LOGGER_NAME
-from ..models import ClientBase, Threshold, MonitoredProperty
 
 logger = logging.getLogger(LOGGER_NAME)
 
@@ -41,22 +35,9 @@ class ClientsConfigurator:
             m.monitored = True if m.pk in self._monitored_properties else False
             m.save()
 
-        # for t in self._thresholds:
-        #     threshold = Threshold(type = 1,
-        #                           value = t[1],
-        #                           max_cycle_above_value=t[2],
-        #                           monitored_property=MonitoredProperty.objects.get(pk=t[0]+1))
-        #     threshold.save()
-        #
-        # for m in MonitoredProperty.objects.all():
-        #     print(m.pk,end=' ')
-        #     for t in m.thresholds.all():
-        #         print(t.type,t.value)
-
-
         client.is_configured = True
         client.save()
-        RRDtoolManager(client).create_rrd()
+        RRDtoolManager.create_rrd(client)
 
     @staticmethod
     def form_configuration_data_for_client(client):
@@ -72,11 +53,9 @@ class ClientsConfigurator:
 
     @staticmethod
     @transaction.atomic
-    def change_client_configuration_status(pk, status):
-        clients = ClientBase.objects.filter(pk=pk)
-        if len(clients) == 1:
-            clients[0].configuration_pending = status
-            clients[0].save()
+    def change_client_configuration_status(client, status):
+        client.configuration_pending = status
+        client.save()
 
 
 class ClientConfigurationException(BaseException):

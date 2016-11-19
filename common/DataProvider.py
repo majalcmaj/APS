@@ -1,8 +1,8 @@
-import time
-import calendar
-
 # TO trzeba zamienić na wywołanie funkcji rrd, musi zwracać taki sam output
-from acquisition_presentation_server.common.RRDtoolManager import RRDtoolManager
+from acquisition_presentation_server.common import RRDtoolManager
 
-def get_client_data(client, time_period):
-    return RRDtoolManager(client).fetch_data(time_period)
+def get_client_data(client, since):
+    return RRDtoolManager.fetch_data(client, since)
+
+def get_client_alerts(client):
+    return [alert.created + ": " + alert.message for alert in client.alerts.all()]

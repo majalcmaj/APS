@@ -1,5 +1,3 @@
-import logging
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
@@ -7,8 +5,9 @@ from django.urls.base import reverse
 from django.views import View
 
 from acquisition_presentation_server.common.ClientsConfigurator import ClientsConfigurator
-from acquisition_presentation_server.models import PendingClient, BlockedClient, Client, MonitoredProperty
+from acquisition_presentation_server.models import Client
 from acquisition_presentation_server.views.forms.ClientConfigurationForm import ClientConfigurationForm
+from acquisition_presentation_server.views.forms.ThresholdForm import ThresholdForm
 
 
 class ClientConfigurationView(LoginRequiredMixin, View):
@@ -20,7 +19,6 @@ class ClientConfigurationView(LoginRequiredMixin, View):
         error_message = error if error != None else ""
         client = get_object_or_404(Client, pk=pk)
 
-        # "client": client,'monitored_properties': monitored_properies,"error_message": error_message
         return render(request, 'acquisition_presentation_server/ClientConfigurationView.html',
                       self._create_context(
                           request,
@@ -29,19 +27,8 @@ class ClientConfigurationView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         pk = kwargs['client_pk']
         client_conf = ClientConfigurationForm(request.POST)
-        # hostname = request.POST.get('hostname')
-        # port = request.POST.get('port')
-        # probing_interval = request.POST.get('probing_interval')
         monitored_properties = request.POST.getlist('monitored_properties[]')
         property_for_dashboard = request.POST.get('show_on_dashboard[]')
-
-        # allowed_thresholds = request.POST.getlist("allowed_thresholds[]")
-        # thresholds_values = request.POST.getlist("thresholds_values[]")
-        # threshold_cycles = request.POST.getlist("threshold_cycles[]")
-        # thresholds = [(int(i)-1, thresholds_values[int(i)-1], threshold_cycles[int(i)-1]) for i in allowed_thresholds]
-        # for threshold in thresholds:
-        #     print(threshold)
-
         if client_conf.is_valid():
             cc = ClientsConfigurator(
                 pk,
@@ -83,5 +70,6 @@ class ClientConfigurationView(LoginRequiredMixin, View):
             "client_pk": client.pk,
             "current_url": request.get_full_path(),
             "form": ClientConfigurationForm.from_client(client) if client_form is None else client_form,
+            "threshold_form": ThresholdForm.for_client(client.pk),
             "monitored_properties": monitored_properies
         }

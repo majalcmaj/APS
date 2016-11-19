@@ -15,41 +15,104 @@
     </script>
 {% endblock %}
 {% block content %}
-    <h1>Szczegóły dot. klienta</h1>
-    <div class="content_unit">
-        <div class="row">
-            <div class="fll col-lg-6">
-                <span class="accent">{{ client.hostname }} </span>
-                {{ client.ip_address }}:{{ client.port }}
+    <div class="content">
+        <h1>Client Details</h1>
+        <div class="content_unit">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#charts" aria-controls="charts"
+                                                          role="tab" data-toggle="tab">Charts</a>
+                </li>
+                <li role="presentation"><a href="#alerts" aria-controls="alerts"
+                                           role="tab"
+                                           data-toggle="tab">Alerts</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="charts">
+                    <div class="row">
+                        <div class="fll col-lg-6">
+                            <span class="accent">{{ client.hostname }} </span>
+                            {{ client.ip_address }}:{{ client.port }}
+                        </div>
+                        <div class="fll col-lg-6">
+                            <span class="accent">Probing interval: </span>
+                            {{ client.probing_interval }}</div>
+                    </div>
+                    <div id="client_charts"></div>
+                    <script type="text/javascript">
+                        $(document).ready(function () {
+                            for (var data_entry in chart_datasets["data"]) {
+                                var data_json = chart_datasets["data"][data_entry];
+                                var element = document.createElement("div");
+                                element.setAttribute("id", data_entry);
+                                document.getElementById("client_charts").appendChild(element);
+                                charts[data_entry] = create_chart("#" + data_entry,
+                                        data_json,
+                                        chart_datasets["unix_time"],
+                                        data_entry,
+                                        "unit"
+                                );
+                            }
+                        })
+                    </script>
+                    <div>
+                        {% if user.is_authenticated %}
+                            <form method="get" action="{% url 'aps:ClientConfiguration' client.pk "" %}">
+                                <button type="submit" value="configure"
+                                        class="btn btn-warning">Configure
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="alerts">
+                    <div>
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Timestamp</th>
+                                <th>Alert message</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            {% for alert in alerts %}
+                                <tr>
+                                    <th>
+                                        {{ forloop.counter }}
+                                    </th>
+                                    <td>
+                                        {{ alert.created }}
+                                    </td>
+                                    <td>
+                                        {{ alert.message }}
+                                    </td>
+                                    <td>
+                                        <form method="post" action="{% url 'aps:AlertsCleaner' client.pk %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="alert_pk" value="{{ alert.pk }}"/>
+                                            <button type="submit" value="delete_single" name="delete_single"
+                                                    class="btn btn-sm"><span class="glyphicon glyphicon-minus"/>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <form method="post" action="{% url 'aps:AlertsCleaner' client.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" value="delete_all" name="delete_all"
+                                    class="btn btn-danger">Delete all
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
-            <div class="fll col-lg-6">
-                <span class="accent">Probing interval: </span>
-                {{ client.probing_interval }}</div>
-        </div>
-        <div id="client_charts"></div>
-        <script type="text/javascript">
-            $(document).ready(function () {
-                for (var data_entry in chart_datasets["data"]) {
-                    var data_json = chart_datasets["data"][data_entry];
-                    var element = document.createElement("div");
-                    element.setAttribute("id", data_entry);
-                    document.getElementById("client_charts").appendChild(element);
-                    charts[data_entry] = create_chart("#" + data_entry,
-                            data_json,
-                            chart_datasets["unix_time"],
-                            data_entry,
-                            "unit"
-                    );
-                }
-            })
-        </script>
-        <div>
-            {% if user.is_authenticated %}
-                <form method="get" action="{% url 'aps:ClientConfiguration' client.pk "" %}">
-                    <button type="submit" value="configure"
-                            class="btn btn-warning">Configure</button>
-                </form>
-            {% endif %}
         </div>
     </div>
     <script type="text/javascript">
@@ -85,6 +148,15 @@
         }
         $(document).ready(function () {
             setInterval(updateCharts, ({{ update_ratio_seconds }}) * 1000);
-        })
+        });
+        $(function () {
+            var hash = document.location.hash;
+            if (hash) {
+                $('.nav-tabs a[href=\'' + hash + '\']').tab('show');
+            }
+            $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
+                window.location.hash = e.target.hash;
+            });
+        });
     </script>
 {% endblock %}

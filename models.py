@@ -20,9 +20,6 @@ class ClientBase(models.Model):
     configuration_pending = models.BooleanField(default=True)
     base_probing_interval = models.IntegerField(default=1)
 
-    class Meta:
-        unique_together = (("ip_address", "port"),)
-
     @property
     def rrd_database_location(self):
         return settings.RRD_DATABASE_DIRECTORY + "/aps_{}.rrd".format(self.hostname)
@@ -53,6 +50,8 @@ class Threshold(models.Model):
     max_cycle_above_value = models.IntegerField(default=1)
     monitored_property = models.ForeignKey(MonitoredProperty, on_delete=models.CASCADE, related_name="thresholds")
 
+    def type_as_string(self):
+        return "Warning" if self.type == 0 else "e-mail notification"
 
 class Alert(models.Model):
     created = models.DateTimeField(auto_now_add=True)
@@ -70,6 +69,9 @@ class Client(ClientBase):
 
     class Meta:
         proxy = True
+
+    def has_alerts(self):
+        return self.alerts.count() > 0
 
 
 class PendingClient(ClientBase):

@@ -5,196 +5,216 @@
     <script type="text/javascript"
             src="{% static "acquisition_presentation_server/js/jquery-3.1.1.min.js" %}"></script>{% endblock %}
 {% block content %}
-    <h1 xmlns="http://www.w3.org/1999/html">Konfiguracja klienta</h1>
-    <div class="content_unit">
-        <h2 style="color: red;">{{ error_message }}</h2>
+    <div class="content">
+        <h1 xmlns="http://www.w3.org/1999/html">Client configuration</h1>
+        <div class="content_unit">
+            <h2 style="color: red;">{{ error_message }}</h2>
 
-        <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="active"><a href="#basic_configuration" aria-controls="basic_configuration"
-                                                      role="tab" data-toggle="tab">Basic Configuration</a>
-            </li>
-            <li role="presentation"><a href="#threshold_configuration" aria-controls="threshold_configuration"
-                                       role="tab"
-                                       data-toggle="tab">Thresholds</a>
-            </li>
-        </ul>
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#basic_configuration"
+                                                          aria-controls="basic_configuration"
+                                                          role="tab" data-toggle="tab">Basic Configuration</a>
+                </li>
+                <li role="presentation"><a href="#threshold_configuration" aria-controls="threshold_configuration"
+                                           role="tab"
+                                           data-toggle="tab">Thresholds</a>
+                </li>
+            </ul>
 
-        <!-- Tab panes -->
-        <div class="tab-content">
-            <div role="tabpanel" class="tab-pane active" id="basic_configuration">
-                <form id="conf_form" method="post" action="{{ current_url }}">
-                    {% csrf_token %}
-                    <table class="table">
-                        {{ form.as_table }}
-                        <tr>
-                            <td>Monitored properties:</td>
-                            <td>
-                                <table class="table">
-                                    <tr>
-                                        <th>
-                                            Is monitored
-                                        </th>
-                                        <th>
-                                            Show on dashboard
-                                        </th>
-                                        <th>
-                                            Property name [unit]
-                                        </th>
-                                        <th>
-                                            Allow Threshold
-                                        </th>
-                                        <th>
-                                            Threshold value
-                                        </th>
-
-                                        <th>
-                                            Cycles before action
-                                        </th>
-                                    </tr>
-                                    {% for monitored_property in monitored_properties %}
-                                        <tr>
-                                            <td>
-                                                <input type="checkbox" name="monitored_properties[]" class="checkbox"
-                                                       value="{{ monitored_property.pk }}" {{ monitored_property.checked|yesno:"checked," }}
-                                                       id="checkbox{{ monitored_property.pk }}"/>
-                                            </td>
-                                            <td>
-                                                <input type="radio" id="radio{{ monitored_property.pk }}"
-                                                       name="show_on_dashboard[]"
-                                                       value="{{ monitored_property.pk }}" class="radio"
-                                                       onclick="on_radio_checked('checkbox{{ monitored_property.pk }}')"
-                                                        {{ monitored_property.on_dashboard|yesno:"checked," }}
-                                                />
-                                            </td>
-                                            <td>{{ monitored_property.name }} [{{ monitored_property.type }}]</td>
-
-                                        <tr/>
-                                    {% endfor %}
-                                </table>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <button type="submit" class="btn btn-success" name="configure" value="configure">Apply
-                                    Configuration
-                                </button>
-                                <button type="submit" class="btn btn-danger float-right" name="delete" value="delete"
-                                        onclick="return confirm('Do you really want to delete client data?');">Delete
-                                </button>
-                            </td>
-                        </tr>
-                    </table>
-                </form>
-                <script type="text/javascript">
-                    function on_radio_checked(checkbox_id) {
-                        var checkbox = document.getElementById(checkbox_id);
-                        checkbox.checked = true;
-                    }
-                </script>
-            </div>
-            <div role="tabpanel" class="tab-pane" id="threshold_configuration">
-                <table class="table">
-                    {% for monitored_property in monitored_properties %}
-                        {% if monitored_property.checked %}
-
-                            <tr style="background-color: #9acfea">
-                                <th>{{ monitored_property.name }}
-
-                                </th>
-                                <td></td>
-                                <td></td>
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="basic_configuration">
+                    <form id="conf_form" method="post" action="{{ current_url }}">
+                        {% csrf_token %}
+                        <table class="table">
+                        <tbody>
+                            {{ form.as_table }}
+                            <tr>
+                                <td>Monitored properties:</td>
                                 <td>
-                                    <button type="button" class="btn btn-primary float-right" data-toggle="modal"
-                                            data-target="#triggerAddModal" data-mp_pk="{{ monitored_property.pk }}">
-                                        <span class="glyphicon glyphicon-plus"></span>
+                                    <table class="table">
+                                        <tr>
+                                            <th>
+                                                Is monitored
+                                            </th>
+                                            <th>
+                                                Show on dashboard
+                                            </th>
+                                            <th>
+                                                Property name [unit]
+                                            </th>
+                                        </tr>
+                                        {% for monitored_property in monitored_properties %}
+                                            <tr>
+                                                <td>
+                                                    <input type="checkbox" name="monitored_properties[]"
+                                                           class="checkbox"
+                                                           value="{{ monitored_property.pk }}" {{ monitored_property.checked|yesno:"checked," }}
+                                                           id="checkbox{{ monitored_property.pk }}"/>
+                                                </td>
+                                                <td>
+                                                    <input type="radio" id="radio{{ monitored_property.pk }}"
+                                                           name="show_on_dashboard[]"
+                                                           value="{{ monitored_property.pk }}" class="radio"
+                                                           onclick="on_radio_checked('checkbox{{ monitored_property.pk }}')"
+                                                            {{ monitored_property.on_dashboard|yesno:"checked," }}
+                                                    />
+                                                </td>
+                                                <td>{{ monitored_property.name }} [{{ monitored_property.type }}]</td>
+
+                                            <tr/>
+                                        {% endfor %}
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <button type="submit" class="btn btn-success" name="configure" value="configure">
+                                        Apply
+                                        Configuration
+                                    </button>
+                                    <button type="submit" class="btn btn-danger float-right" name="delete"
+                                            value="delete"
+                                            onclick="return confirm('Do you really want to delete client data?');">
+                                        Delete
                                     </button>
                                 </td>
                             </tr>
-                            {% for threshold in monitored_property.thresholds %}
-                                <tr>
-                                    <td>
-                                        {{ threshold.value }}
-                                    </td>
-                                    <td>
-                                        {{ threshold.max_cycle_above_value }}
-                                    </td>
-                                    <td>
-                                        {{ threshold.type }}
-                                    </td>
-                                    <td>
-                                        <form method="post"
-                                              action="{% url "aps:ThresholdConfiguration" %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" value="{{ threshold.pk }}"
-                                                   name="threshold_pk"/>
-                                            <input type="hidden" value="{{ client_pk }}"
-                                                   name="client_pk"/>
-                                            <button type="submit" class="btn btn-danger float-right"
-                                                    value="delete_threshold" name="delete_threshold">
-                                                <span class="glyphicon glyphicon-minus"></span>
-                                            </button>
-                                        </form>
-                                    </td>
+                        </tbody>
+                        </table>
+                    </form>
+                    <script type="text/javascript">
+                        function on_radio_checked(checkbox_id) {
+                            var checkbox = document.getElementById(checkbox_id);
+                            checkbox.checked = true;
+                        }
+                    </script>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="threshold_configuration">
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr class="bg-success">
+                            <th>
+                                Property
+                            </th>
+                            <th>
+                                Threshold value
+                            </th>
+                            <th>
+                                Cycles above<br/>threshold value
+                            </th>
+                            <th>
+                                Type
+                            </th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for monitored_property in monitored_properties %}
+                            {% if monitored_property.checked %}
+                                <tr class="active">
+                                    <th class="col-md-3">
+                                        {{ monitored_property.name }} [{{ monitored_property.type }}]
+                                        <button type="button" class="btn btn-primary pull-right" data-toggle="modal"
+                                                data-target="#triggerAddModal" data-mp_pk="{{ monitored_property.pk }}">
+                                            Add Threshold
+                                        </button>
+                                    </th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
                                 </tr>
-                            {% endfor %}
-                        {% endif %}
-                    {% endfor %}
-                </table>
-                <div class="modal fade" id="triggerAddModal" tabindex="-1" role="dialog"
-                     aria-labelledby="triggerAddModal">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <form method="post" action="{% url "aps:ThresholdConfiguration" %}">
-                                {% csrf_token %}
-                                <div class="modal-body">
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                                            aria-hidden="true">&times;</span></button>
-                                    <input type="hidden" id="mp_pk" name="mp_pk" title="MP-PK"/>
-                                    <input type="hidden" value="{{ client_pk }}"
-                                           name="client_pk"/>
-                                    <div class="form-group">
-                                        <label for="new_threshold_value" class="control-label">Threshold
-                                            Value:</label><br/>
-                                        <input type="text" id="new_threshold_value" name="threshold_value"/>
+                                {% for threshold in monitored_property.thresholds %}
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            {{ threshold.value }}
+                                        </td>
+                                        <td>
+                                            {{ threshold.max_cycle_above_value }}
+                                        </td>
+                                        <td>
+                                            {{ threshold.type_as_string }}
+                                        </td>
+                                        <td>
+                                            <form method="post"
+                                                  action="{% url "aps:ThresholdConfiguration" %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" value="{{ threshold.pk }}"
+                                                       name="threshold_pk"/>
+                                                <input type="hidden" value="{{ client_pk }}"
+                                                       name="client_pk"/>
+                                                <button type="submit" class="btn btn-xs float-right"
+                                                        value="delete_threshold" name="delete_threshold">
+                                                    <span class="glyphicon glyphicon-minus"></span>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="modal fade" id="triggerAddModal" tabindex="-1" role="dialog"
+                         aria-labelledby="triggerAddModal">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <form method="post" action="{% url "aps:ThresholdConfiguration" %}">
+                                    {% csrf_token %}
+                                    <div class="modal-body">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-label="Close"><span
+                                                aria-hidden="true">&times;</span></button>
+                                        <input type="hidden" id="mp_pk" name="mp_pk" title="MP-PK"/>
+                                        <div class="form-group">
+                                            <table class="table">
+                                                {{ threshold_form.as_table }}
+                                            </table>
+                                        </div>
                                     </div>
-                                    <div class="form-group">
-                                        <label for="new_threshold_cycles" class="control-label">Threshold
-                                            Cycles:</label><br/>
-                                        <input type="text" id="new_threshold_cycles" name="threshold_cycles"/>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close
+                                        </button>
+                                        <button type="submit" class="btn btn-success"
+                                                name="add_threshold"
+                                                value="add_threshold">
+                                            Add threshold
+                                        </button>
                                     </div>
-                                    <div class="form-group">
-                                        <label for="new_threshold_type" class="control-label">Threshold
-                                            Type:</label><br/>
-                                        <input type="text" id="new_threshold_type" name="threshold_type"/>
-                                    </div>
-
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close
-                                    </button>
-                                    <button type="submit" class="btn btn-success"
-                                            name="add_threshold"
-                                            value="add_threshold">
-                                        Add threshold
-                                    </button>
-                                </div>
-                            </form>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <script type="text/javascript">
-                    $(document).ready(function () {
-                        $('#triggerAddModal').on('show.bs.modal', function (event) {
-                            var button = $(event.relatedTarget);
-                            var mp_pk = button.data('mp_pk');
-                            var modal = $(this);
-                            console.error(mp_pk);
-                            modal.find('#mp_pk').val(mp_pk);
-                        })
-                    });
-                </script>
+                    <script type="text/javascript">
+                        $(document).ready(function () {
+                            $('#triggerAddModal').on('show.bs.modal', function (event) {
+                                var button = $(event.relatedTarget);
+                                var mp_pk = button.data('mp_pk');
+                                var modal = $(this);
+                                console.error(mp_pk);
+                                modal.find('#mp_pk').val(mp_pk);
+                            })
+                        });
+                    </script>
+                </div>
             </div>
         </div>
     </div>
+    <script type="text/javascript">
+        $(function () {
+            // Javascript to enable link to tab
+            var hash = document.location.hash;
+            if (hash) {
+                $('.nav-tabs a[href=\'' + hash + '\']').tab('show');
+            }
+
+            // Change hash for page-reload
+            $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
+                window.location.hash = e.target.hash;
+            });
+        });
+    </script>
 {% endblock %}

@@ -1,93 +1,83 @@
+import os
 import rrdtool
 import time
 
 from acquisition_presentation_server import settings
-from acquisition_presentation_server.models import Client
 
 
-class RRDtoolManager:
-    def __init__(self, client):
-        self._path = settings.RRD_DATABASE_DIRECTORY
-        self._hostname = client.hostname
-        self._monitored_properties = {
-            prop.name: prop.type
-            for prop in client.monitored_properties.filter(monitored=True)
-            }
-        self._probing_cycles = client.probing_interval
-        self._base_probing_interval = client.base_probing_interval
-        self._client_pk = client.pk
+def create_rrd(client):
+    rrd_database_name = _get_rrd_abs_path(client.pk)
+    database_update_frequency = client.probing_interval * client.base_probing_interval
+    monitoring_parameters = []
+    for mp in client.monitored_properties.filter(monitored=True):
+        if mp.type != 'string':
+            monitoring_parameters.append(
+                "DS:" + mp.name + ":GAUGE:" + str( 2 * database_update_frequency) + ":U:U")
 
-    def create_rrd(self):
-        if len(self._monitored_properties) > 0:
-            rrd_database_name = self._get_rrd_abs_path()
-            monitoring_parameters = []
-            for k, v in self._monitored_properties.items():
-                if v != 'string':
-                    monitoring_parameters.append(
-                        "DS:" + k + ":GAUGE:" + str(2 * self._probing_cycles * self._base_probing_interval) + ":U:U")
+    rrd_archives = ["RRA:AVERAGE:0.99:1:120"]
 
-            rrd_archives = []
-            rrd_archives.append("RRA:AVERAGE:0.5:1:120")
+    command = [rrd_database_name,
+               '--start', str(int(time.time())),
+               '--step', str(database_update_frequency)]
 
-            command = []
-            command.append(rrd_database_name)
-            command.append('--start')
-            command.append(str(int(time.time())))
-            command.append('--step')
-            command.append(str(self._probing_cycles * self._base_probing_interval))
+    for monitoring_parameter in monitoring_parameters:
+        command.append(monitoring_parameter)
+    for rrd_archive in rrd_archives:
+        command.append(rrd_archive)
 
-            for monitoring_parameter in monitoring_parameters:
-                command.append(monitoring_parameter)
-            for rrd_archive in rrd_archives:
-                command.append(rrd_archive)
+    rrdtool.create(command)
 
-            rrdtool.create(command)
 
-    def update_rrd(self, records):
-        if len(self._monitored_properties) > 0:
-            rrd_database_name = self._get_rrd_abs_path()
-            record_string = str(int(time.time()))
-            template_string = ""
-            for k, v in records.items():
-                template_string += ":" + k
-                record_string += ":" + v
+def update_rrd(client, records, time):
+    rrd_database_name = _get_rrd_abs_path(client.pk)
+    record_string = str(time)
+    template_string = ""
+    for k, v in records.items():
+        template_string += ":" + k
+        record_string += ":" + str(v)
 
-            rrdtool.update(rrd_database_name, '--template', template_string[1:], record_string)
+    rrdtool.update(rrd_database_name, '--template', template_string[1:], record_string)
 
-    def update_rrd_with_order(self, records):
-        if len(self._monitored_properties) > 0:
-            rrd_database_name = self._get_rrd_abs_path()
-            order = self._retreive_order_of_rows(rrd_database_name)
-            record_string = str(int(time.time()))
-            for record in order:
-                record_string += ":" + records[record]
-            rrdtool.update(rrd_database_name, record_string)
 
-    @staticmethod
-    def _retreive_order_of_rows(path):
-        params = []
-        for k, v in rrdtool.info(path).items():
-            if k.find('].index') != -1:
-                params.append((k[k.find('[') + 1:k.rfind(']')], v))
-        params.sort(key=lambda tup: tup[1])
-        return [param[0] for param in params]
+# def fetch_data(client, since):
+#     rrd_database_name = _get_rrd_abs_path(client.pk)
+#     records = rrdtool.fetch(rrd_database_name, 'AVERAGE', '--start', str(since))
+#     records_count = len(records[2])
+#     if records_count == 0:
+#         return None, None
+#     else:
+#         # start, end, step = records[0]
+#         # times = list(range(start, end, step))
+#
+#         result = {'unix_time': records[0]}
+#         data = {}
+#         order = records[1]
+#         for i in range(0, len(order)):
+#             records_array = [value[i] for value in records[2]]
+#             data[order[i]] = records_array
+#
+#         result['data'] = data
+#         return result, records[0][1]
 
-    def _get_rrd_abs_path(self):
-        return self._path + "/" + self._hostname + ".rrd"
+def fetch_data(client, since):
+    rrd_database_name = _get_rrd_abs_path(client.pk)
+    records = rrdtool.fetch(rrd_database_name, 'AVERAGE', '-a', '--start', str(since))
+    # start, end, step = records[0]
+    # #times = list(range(start, end, step))
+    times = list(records[0])
+    record_omits = 2 if client.last_update < times[1] else 1
 
-    def fetch_data(self, time_period):
-        rrd_database_name = self._get_rrd_abs_path()
-        records = rrdtool.fetch(rrd_database_name, 'AVERAGE', '--start', str(int(time.time()) - time_period))
-        start, end, step = records[0]
-        times = list(range(start, end, step))
-        client = Client.objects.get(pk=self._client_pk)
-        record_omits = 2 if client.last_update < times[-1] else 1
+    result = {}
+    times[1] -= record_omits * times[2]
+    result['unix_time'] = times
+    data = result['data'] = {}
+    order = records[1]
+    for i in range(0, len(order)):
+        data[order[i]] = [value[i] for value in records[2]]
+        data[order[i]] = data[order[i]][:-record_omits]
+    print(result)
+    return result, times[1]
 
-        result = {}
-        result['unix_time'] = times[:-record_omits]
-        data = result['data'] = {}
-        order = records[1]
-        for i in range(0, len(order)):
-            data[order[i]] = [value[i] for value in records[2]]
-            data[order[i]] = data[order[i]][:-record_omits]
-        return result, times[-1]
+
+def _get_rrd_abs_path(client_pk):
+    return os.path.join(settings.RRD_DATABASE_DIRECTORY, "{}.rrd".format(client_pk))

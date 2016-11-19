@@ -31,7 +31,7 @@ LOGGING = {
         "django": {
             'handlers': ['console'],
             'propagate': True,
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
         },
     },
 }

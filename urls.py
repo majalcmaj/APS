@@ -1,6 +1,7 @@
 from django.conf.urls import url, include
 from django.contrib.auth import views as auth_views
 
+from acquisition_presentation_server.views.AlertsCleaner import AlertsCleaner
 from acquisition_presentation_server.views.BlockedClientsView import BlockedClientsView
 from acquisition_presentation_server.views.ClientConfigurationView import ClientConfigurationView
 from acquisition_presentation_server.views.ClientDetailsView import ClientDetailsView
@@ -36,4 +37,7 @@ urlpatterns = [
         ),
     url(r'^ThresholdConfiguration$',
         ThresholdConfigurationView.as_view(), name='ThresholdConfiguration'),
+    url(r'^AlertsCleaner/(?P<client_pk>[0-9]+)$',
+        AlertsCleaner.as_view(), name='AlertsCleaner'),
+
 ]

@@ -7,31 +7,46 @@
     <script type="text/javascript">
         // Collecting initial data for charts from server
         var charts = {};
-        var pk_last_update = {}
+        var pk_last_update = {};
         var visible_properties_for_clients = {};
         var chart_datasets = {{ monitoring_data | safe }};
     </script>
 {% endblock %}
 {% block content %}
-    <div class="container-fluid">
+    <div class="col-sm-3 col-md-2 sidebar">
+        <ul class="nav nav-sidebar">
+            <li><img style="max-width: 200px;"
+                     src="http://i598.photobucket.com/albums/tt70/Gardevoir3000/Mysterious_Thing_Avatar.png"/></li>
+        </ul>
+    </div>
+    <div class="container-fluid col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
         {% for client in clients %}
             <div class="col-lg-4">
                 <a href="{% url 'aps:ClientDetails' client.pk %}" class="nothing_on_hover">
                     <div class="panel panel-default">
                         <div class="panel-heading align_left">
                             <div class="panel-title">
-                                <div style="display: inline-block; padding-top: 5px;">
+                                <div style="display: inline-block; padding-top: 5px; width: 100%">
                                     <span class="accent">{{ client.hostname }}</span>
                                     <span> {{ client.ip_address }}:{{ client.port }}</span>
+
+                                    <div style="display: inline-block;float: right">
+                                        {% if client.has_alerts %}
+                                            <span class="btn btn-sm glyphicon glyphicon-exclamation-sign float-right"
+                                                  data-toggle="tooltip"
+                                                  data-placement="bottom"
+                                                  title="An alert has been triggered for this client. Check it's dashboard for details."></span>
+                                        {% endif %}
+                                        {% if user.is_authenticated %}
+                                            <form class="inline_form flr" method="get"
+                                                  action="{% url 'aps:ClientConfiguration' client.pk "" %}">
+                                                <button type="submit" value="configure"
+                                                        class="btn btn-sm glyphicon glyphicon-wrench">
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
                                 </div>
-                                {% if user.is_authenticated %}
-                                    <form class="inline_form flr" method="get"
-                                          action="{% url 'aps:ClientConfiguration' client.pk "" %}">
-                                        <button type="submit" value="configure"
-                                                class="btn btn-default btn-md glyphicon glyphicon-wrench">
-                                        </button>
-                                    </form>
-                                {% endif %}
                             </div>
                         </div>
                         <div class="panel-body">
@@ -48,7 +63,7 @@
                                             data_json["data"][name_on_dash],
                                             time,
                                             name_on_dash, "{{ client.property_on_dashboard.type }}");
-                                    pk_last_update[pk] = time[time.length - 1];
+                                    pk_last_update[pk] = time[1];
                                 })
                             </script>
                         </div>
@@ -69,12 +84,16 @@
 
                     success: function (json) {
                         var monitoring_data = json["monitoring_data"];
-                        pk_last_update = json["pk_last_update"];
-                        for (var pk in visible_properties_for_clients) {
-                            var chart = charts[pk];
+                        var new_pklupd = json["pk_last_update"];
+                        for(var id in new_pklupd) {
+                            pk_last_update[id] = new_pklupd[id];
+                        }
+
+                        for (var id in monitoring_data) {
+                            var chart = charts[id];
                             update_chart(chart,
-                                    monitoring_data[pk]["data"][visible_properties_for_clients[pk]],
-                                    monitoring_data[pk]["unix_time"]
+                                    monitoring_data[id]["data"][visible_properties_for_clients[id]],
+                                    monitoring_data[id]["unix_time"]
                             );
                         }
                     },
@@ -89,6 +108,7 @@
         }
         $(document).ready(function () {
             setInterval(updateCharts, ({{ update_ratio_seconds }}) * 1000);
+            $('[data-toggle="tooltip"]').tooltip()
         })
     </script>
 {% endblock %}

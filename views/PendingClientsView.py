@@ -1,10 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import render
-from django.urls.base import reverse
 from django.views import View
 
-from acquisition_presentation_server.common.ClientsStateManager import ClientsStateManager
+from acquisition_presentation_server.common import ClientsStateManager
 from acquisition_presentation_server.models import PendingClient
 
 

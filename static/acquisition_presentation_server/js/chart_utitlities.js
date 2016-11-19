@@ -11,7 +11,10 @@ function prepare_chart_data(time, data) {
     return {labels: time, series: [data]}
 }
 
-function create_chart(element_locator, data_arr, time_arr, title, unit) {
+function create_chart(element_locator, data_arr, time, title, unit) {
+    var time_arr = [];
+    for(var i = time[0]; i < time[1]; i += time[2])
+        time_arr.push(i);
     var data_length = time_arr.length;
     var labels_to_skip = Math.floor(data_length / 3);
     var options = {
@@ -50,24 +53,27 @@ function create_chart(element_locator, data_arr, time_arr, title, unit) {
         options['low'] = 0;
     }
     return Chartist.Line(element_locator,
-
         prepare_chart_data(time_arr, data_arr),
         options
     );
 
 }
 //Chart content updater
-function update_chart(chart, append_data, append_time) {
+function update_chart(chart, append_data, time) {
     var current_data = chart.data.series[0];
-    append_data.forEach(function (record) {
-        current_data.shift();
-        current_data.push(record);
-    });
+    // current_data = current_data.concat(append_data);
+    // current_data = current_data.slice(append_data.length);
     var current_time = chart.data.labels;
-    for (i = 0; i < append_time.length; i++) {
-        label = append_time[i];
+    var current_index = current_time.length - 1;
+    while(current_time[current_index] > time[0]) {
+        current_data.pop();
+        current_time.pop();
+    }
+    for(i= time[0], counter=0; i < time[1] ; i += time[2], counter += 1) {
         current_time.shift();
-        current_time.push(label);
+        current_data.shift();
+        current_time.push(i);
+        current_data.push(append_data[counter]);
     }
     chart.update(prepare_chart_data(current_time, current_data));
 }
