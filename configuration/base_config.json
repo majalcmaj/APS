@@ -15,5 +15,6 @@
 
   "LUMEL_MONITORING": true,
   "LUMEL_IP": "localhost",
-  "LUMEL_PORT": "8300"
+  "LUMEL_PORT": "8300",
+  "BASE_PROBING_INTERVAL": 3
 }

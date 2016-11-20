@@ -87,6 +87,7 @@ class DataSender:
         payload = {"message": "monitoring_data",
                    "hostname": self.hostname,
                    "monitored_properties": agregator,
-                   "key": str(self._key)
+                   "key": str(self._key),
+                   "timestamp": int(time.time())
                    }
         return url, headers, payload
