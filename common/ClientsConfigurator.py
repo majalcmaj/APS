@@ -8,8 +8,10 @@ from acquisition_presentation_server.settings import LOGGER_NAME
 
 logger = logging.getLogger(LOGGER_NAME)
 
-
 class ClientsConfigurator:
+    """
+    Class which takes care of configuring the client (monitored machine).
+    """
     def __init__(self, pk, hostname, probing_cycles, monitored_properties,
                  property_for_dashbaord):
         self._pk = pk

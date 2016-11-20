@@ -26,20 +26,8 @@ class JsonRequestView(View):
         logger.error("{}: {}".format(request.content_type, request.body))
         if request.content_type == "aps/json":
             json_data = json.loads(request.body.decode('utf-8'))
-            if json_data['message'] == 'register':
-                try:
-                    pk = ClientsStateManager.register_new_pending_client(json_data['hostname'],
-                                                                         request.META['REMOTE_ADDR'],
-                                                                         json_data['listening_port'],
-                                                                         json_data['monitored_properties'],
-                                                                         json_data['base_probing_interval'],
-                                                                         )
 
-                    return JsonResponse({"result": "success", "key": pk})
-                except ClientsManagerException as e:
-                    return JsonResponse({"result": "failed", "message": e.message}, status=403)
-
-            elif json_data['message'] == 'monitoring_data':
+            if json_data['message'] == 'monitoring_data':
                 client = ClientsStateManager.get_client(int(json_data['key']))
                 if client is not None:
                     if client.configuration_pending is True:
@@ -56,10 +44,14 @@ class JsonRequestView(View):
                         request.META['REMOTE_ADDR']))
                     return JsonResponse({"result": "failure"})
 
+            elif json_data['message'] == 'is_key_valid':
+                client = ClientsStateManager.get_client(int(json_data['key']))
+                return JsonResponse({"key_valid": client is not None})
+
             elif json_data['message'] == 'get_client_configuration':
                 client = ClientsStateManager.get_client(int(json_data['key']))
                 if client is not None:
-                    if client.configuration_pending:
+                    if client.configuration_pending or client.is_configured:
                         configuration = ClientsConfigurator.form_configuration_data_for_client(client)
                         ClientsConfigurator.change_client_configuration_status(client, False)
                         return JsonResponse({"configuration": configuration})
@@ -68,3 +60,24 @@ class JsonRequestView(View):
                         json_data['key'],
                         request.META['REMOTE_ADDR']))
                 return JsonResponse({"configuration": None})
+
+
+            elif json_data['message'] == 'register':
+                return self._register_client(json_data, request)
+
+
+
+
+    def _register_client(self, json_data, request):
+        try:
+            pk = ClientsStateManager.register_new_pending_client(json_data['hostname'],
+                                                                 request.META['REMOTE_ADDR'],
+                                                                 json_data['monitored_properties'],
+                                                                 json_data['base_probing_interval'],
+                                                                 )
+
+            return JsonResponse({"result": "success", "key": pk})
+        except ClientsManagerException as e:
+            return JsonResponse({"result": "failed", "message": e.message}, status=403)
+
+

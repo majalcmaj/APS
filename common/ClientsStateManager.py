@@ -1,9 +1,9 @@
 from acquisition_presentation_server.models import MonitoredProperty, ClientBase, PendingClient, Client, BlockedClient
 
 
-def register_new_pending_client(client_hostname, client_address, client_port, monitored_properties,
+def register_new_pending_client(client_hostname, client_address, monitored_properties,
                                 base_probing_interval):
-    # TODO
+    # TODO Rozrozniac przychodzace klienty
     # if len(Client.objects.filter(hostname=client_hostname)) > 0:
     #     raise ClientsManagerException("Already registered")
     # if len(BlockedClient.objects.filter(hostname=client_hostname)) > 0:
@@ -15,7 +15,6 @@ def register_new_pending_client(client_hostname, client_address, client_port, mo
     pending_client = PendingClient(
         hostname=client_hostname,
         ip_address=client_address,
-        port=client_port,
         base_probing_interval=base_probing_interval,
         state=ClientBase.PENDING,
     )

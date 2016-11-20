@@ -14,10 +14,30 @@
 {% endblock %}
 {% block content %}
     <div class="col-sm-3 col-md-2 sidebar">
-        <ul class="nav nav-sidebar">
-            <li><img style="max-width: 200px;"
-                     src="http://i598.photobucket.com/albums/tt70/Gardevoir3000/Mysterious_Thing_Avatar.png"/></li>
-        </ul>
+        <form>
+            <div class="form-group">
+
+                <label for="filter_clients_textbox">Filter clients by hostname</label>
+                <input class="form-control" id="filter_clients_textbox" type="text" class="form-control"
+                       placeholder="Search...">
+            </div>
+            <div class="form-group">
+
+                <button type="submit" class="btn btn-warning">Apply sorting</button>
+            </div>
+        </form>
+        <hr/>
+        <form>
+            <label>Sort clients</label>
+            <div class="checkbox">
+                <label><input type="checkbox" name="client_sorting[]" title="By hostname"/>By hostname</label>
+                <br/>
+                <label><input type="checkbox" name="client_sorting[]" title="By IP address"/>By IP address</label>
+                <hr/>
+                <label><input type="checkbox" name="descending" title="Descending"/>Descending</label>
+            </div>
+            <button type="submit" class="btn btn-warning">Apply sorting</button>
+        </form>
     </div>
     <div class="container-fluid col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
         {% for client in clients %}
@@ -85,7 +105,7 @@
                     success: function (json) {
                         var monitoring_data = json["monitoring_data"];
                         var new_pklupd = json["pk_last_update"];
-                        for(var id in new_pklupd) {
+                        for (var id in new_pklupd) {
                             pk_last_update[id] = new_pklupd[id];
                         }
 
