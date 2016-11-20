@@ -7,13 +7,12 @@ import json
 
 
 class DataSender:
-    def __init__(self, command_pipe, result_pipe, server_ip, server_port, hostname, base_probing_interval):
+    def __init__(self, command_pipe, result_pipe, server_ip, server_port, base_probing_interval):
         self.command_pipe = command_pipe
         self.result_pipe = result_pipe
 
         self.server_ip = server_ip
         self.server_port = server_port
-        self.hostname = hostname
 
         self._key = None
         self._configuration = None
@@ -85,7 +84,6 @@ class DataSender:
         url = "http://{0}:{1}/aps/JsonRequest".format(self.server_ip, self.server_port)
         headers = {"content-type": "aps/json"}
         payload = {"message": "monitoring_data",
-                   "hostname": self.hostname,
                    "monitored_properties": agregator,
                    "key": str(self._key),
                    "timestamp": int(time.time())
