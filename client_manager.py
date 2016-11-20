@@ -1,16 +1,17 @@
-import constant_values
 import json
-import io
-import requests
-import time
 import os
-
-import utils.utils_functions as utils_functions
+import socket
+import time
 from multiprocessing import Process
-from configuration_handlers.client_key_handler import ClientKeyHandler
+
+import requests
+
+import constant_values
+import utils.utils_functions as utils_functions
 from configuration_handlers.client_conifguration_handler import ClientConfigurationHandler
-from hardware_data_collector import HardwareDataCollector
+from configuration_handlers.client_key_handler import ClientKeyHandler
 from data_sender import DataSender
+from hardware_data_collector import HardwareDataCollector
 from interrupt_handler import InterruptHandler
 
 
@@ -21,26 +22,29 @@ class ClientManager:
         self._current_data_configuration = None
         self._data_sender = DataSender(command_pipe, result_pipe, self._configuration['SERVER_IP'],
                                        self._configuration['SERVER_PORT'],
-                                       self._configuration['HOSTNAME'],
+
                                        int(self._configuration['BASE_PROBING_INTERVAL']))
 
     def run(self):
         interrupt_handler = InterruptHandler()
         interrupt_handler.register_interrupt_handler()
 
-        response = self.register_on_server(self._configuration)
+        # if we already have key then we dont have to register on server
+        self._client_key = ClientKeyHandler.get_assigned_client_key()
+        print("CURRENT KEY:", self._client_key)
 
-        # getting authorization key for next steps
-        if response.status_code == 200:
-            self._client_key = response.json()['key']
-            ClientKeyHandler.save_client_key(self._client_key)
-        elif response.status_code == 403:
-            self._client_key = ClientKeyHandler.get_assigned_client_key()
+        if self._client_key is None or ClientKeyHandler.is_key_valid(self._configuration,self._client_key) is False:
+            # getting authorization key for next steps
+            response = self.register_on_server(self._configuration)
+            if response.status_code == 200:
+                self._client_key = response.json()['key']
+                ClientKeyHandler.save_client_key(self._client_key)
+            elif response.status_code == 403:
+                print("Could not connect to server during registration:", response.status_code)
+                exit(-1)
 
         # getting configuration from server
-        if self._client_key is not None:
-            print("Received Key:", self._client_key)
-            self.get_configuration()
+        self.get_configuration()
 
         # start sending data
         if self._current_data_configuration is not None:
@@ -52,10 +56,9 @@ class ClientManager:
         url = "http://{0}:{1}/aps/JsonRequest".format(configuration['SERVER_IP'], configuration['SERVER_PORT'])
         headers = {"content-type": "aps/json"}
         payload = {"message": "register",
-                   "listening_port": configuration['HOST_PORT'],
                    "monitored_properties": configuration['MONITORED_PROPERTIES'],
-                   "hostname": configuration['HOSTNAME'],
-                   "base_probing_interval":configuration['BASE_PROBING_INTERVAL']
+                   "hostname": socket.gethostname(),
+                   "base_probing_interval": configuration['BASE_PROBING_INTERVAL']
                    }
 
         while True:
@@ -100,6 +103,6 @@ if __name__ == '__main__':
     })
 
     hardware_data_collector_process.start()
-    utils_functions.drop_privileges('artur', 'artur')
+    utils_functions.drop_privileges(configuration['BASE_USERNAME'], configuration['BASE_USER_GROUP'])
 
     ClientManager(w_command_pipe, r_result_pipe, configuration).run()
