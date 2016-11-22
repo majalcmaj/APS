@@ -104,12 +104,14 @@
                         </table>
                     </div>
                     <div>
-                        <form method="post" action="{% url 'aps:AlertsCleaner' client.pk %}">
-                            {% csrf_token %}
-                            <button type="submit" value="delete_all" name="delete_all"
-                                    class="btn btn-danger">Delete all
-                            </button>
-                        </form>
+                        {% if user.is_authenticated %}
+                            <form method="post" action="{% url 'aps:AlertsCleaner' client.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" value="delete_all" name="delete_all"
+                                        class="btn btn-danger">Delete all
+                                </button>
+                            </form>
+                        {% endif %}
                     </div>
                 </div>
             </div>

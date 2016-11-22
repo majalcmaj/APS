@@ -1,42 +1,46 @@
+from datetime import timedelta
 from django import forms
 
 
 class ClientConfigurationForm(forms.Form):
     hostname = forms.CharField(max_length=30, required=True, label="Hostname")
-    ip_port = forms.CharField(label="Client IP", disabled=True, required=False)
-    base_probing_interval = forms.CharField(disabled=True,required=False)
-    probing_cycles = forms.IntegerField(min_value=1, required=True)
+    ip_address = forms.CharField(label="Client IP", disabled=True, required=False)
+    base_probing_interval = forms.CharField(disabled=True, required=False)
+    consecutive_probes_sent_count = forms.IntegerField(min_value=1, required=True,
+                                                       widget=forms.TextInput())
 
-    #monitored_properties = forms.MultipleChoiceField(choices=[])
-    #
-    # def __init__(self, monitored_properties, *args, **kwargs):
-    #     super().__init__(args, kwargs)
-    #     self.fields["monitored_properties"] = forms.MultipleChoiceField(
-    #         choices=[(p.pk, str(p)) for p in monitored_properties]
-    #     )
+    monitoring_days = forms.IntegerField(label="Days", min_value=0, required=False,
+                                         widget=forms.TextInput(attrs={"style": "width: 50px"}))
+    monitoring_hours = forms.IntegerField(label="Hours", min_value=0, required=False,
+                                          widget=forms.TextInput(attrs={"style": "width: 50px"}))
+    monitoring_minutes = forms.IntegerField(label="Minutes", min_value=0, required=False,
+                                            widget=forms.TextInput(attrs={"style": "width: 50px"}))
+    monitoring_seconds = forms.IntegerField(label="Seconds", min_value=0, required=False,
+                                            widget=forms.TextInput(attrs={"style": "width: 50px"}))
 
     @classmethod
     def from_client(cls, client):
-        monitored_properties = list(client.monitored_properties.all())
+        td = timedelta(seconds=client.monitoring_timespan)
+        hours, remainder = divmod(td.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
         initial = {
             "hostname": client.hostname,
-            "ip_port": "{}:{}".format(client.ip_address, client.port),
+            "ip_address": client.ip_address,
             "base_probing_interval": client.base_probing_interval,
-            "probing_cycles": client.probing_interval,
-            #"monitored_properties": [mp.pk for mp in client.monitored_properties.filter(monitored=True)]
+            "consecutive_probes_sent_count": client.consecutive_probes_sent_count,
+            "monitoring_days": td.days,
+            "monitoring_hours": hours,
+            "monitoring_minutes": minutes,
+            "monitoring_seconds": seconds
+
         }
         return cls(initial=initial)
 
-
-        # self.hostname = client.hostname
-        # self.ip_address = client.ip_address
-        # self.port = client.port
-        # self.probing_interval = client.probing_interval
-        # property_choices = ((prop.pk, prop.name) for prop in client.monitored_properties.all())
-        # self.monitored_properties.choices = property_choices
-        # self.initial = {'monitored_properties':
-        #                      [prop.name for prop in client.monitored_properties.filter(monitored=True)]}
-        # self.hostname.initial = client.hostname
-        # self.ip_address.initial = client.ip_address
-        # self.port.initial = client.port
-        # self.probing_interval.initial = client.probing_interval
+    def get_monitoring_timespan(self):
+        td = timedelta(
+            days=self.cleaned_data['monitoring_days'],
+            hours=self.cleaned_data['monitoring_hours'],
+            minutes=self.cleaned_data['monitoring_minutes'],
+            seconds=self.cleaned_data['monitoring_seconds']
+        )
+        return int(td.total_seconds())

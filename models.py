@@ -11,13 +11,13 @@ class ClientBase(models.Model):
 
     hostname = models.CharField(max_length=200)
     ip_address = models.CharField(max_length=15, null=False)
-    port = models.IntegerField(default=13000)
-    probing_interval = models.IntegerField(default=10)
+    monitoring_timespan = models.IntegerField(default=24 * 60 * 60)
     is_configured = models.BooleanField(default=False)
     last_update = models.IntegerField(default=-1)
     state = models.IntegerField(default=PENDING, db_index=True)
     property_on_dashboard = models.ForeignKey("MonitoredProperty", on_delete=models.DO_NOTHING, null=True)
     configuration_pending = models.BooleanField(default=True)
+    consecutive_probes_sent_count = models.IntegerField(default=1)
     base_probing_interval = models.IntegerField(default=1)
 
     @property
@@ -26,7 +26,7 @@ class ClientBase(models.Model):
 
     def __str__(self):
         return "Host: {} IP:{} Probing_interval:{} Monitored Properties: [{}]" \
-            .format(self.hostname, self.ip_address, self.probing_interval,
+            .format(self.hostname, self.ip_address, self.consecutive_probes_sent_count,
                     ', '.join([str(prop) for prop in self.monitored_properties.all()]))
 
 
@@ -53,11 +53,12 @@ class Threshold(models.Model):
     def type_as_string(self):
         return "Warning" if self.type == 0 else "e-mail notification"
 
+
 class Alert(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     message = models.TextField()
     client = models.ForeignKey(ClientBase, on_delete=models.CASCADE, related_name="alerts")
-    threshold = models.ForeignKey(Threshold, on_delete=models.DO_NOTHING, related_name="alerts")
+    threshold = models.ForeignKey(Threshold, on_delete=models.DO_NOTHING, related_name="alerts", null=True)
 
 
 class Client(ClientBase):
@@ -73,6 +74,10 @@ class Client(ClientBase):
     def has_alerts(self):
         return self.alerts.count() > 0
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.state = self.MONITORED
+
 
 class PendingClient(ClientBase):
     class Manager(models.Manager):
@@ -84,6 +89,10 @@ class PendingClient(ClientBase):
     class Meta:
         proxy = True
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.state = self.PENDING
+
 
 class BlockedClient(ClientBase):
     class Manager(models.Manager):
@@ -94,3 +103,7 @@ class BlockedClient(ClientBase):
 
     class Meta:
         proxy = True
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.state = self.BLOCKED

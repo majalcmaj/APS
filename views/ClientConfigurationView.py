@@ -1,11 +1,11 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http.response import HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
+from django.http.response import HttpResponseRedirect, Http404
+from django.shortcuts import render
 from django.urls.base import reverse
 from django.views import View
 
-from acquisition_presentation_server.common.ClientsConfigurator import ClientsConfigurator
-from acquisition_presentation_server.models import Client
+from acquisition_presentation_server.common import ClientManager
+from acquisition_presentation_server.common import ClientsConfigurator
 from acquisition_presentation_server.views.forms.ClientConfigurationForm import ClientConfigurationForm
 from acquisition_presentation_server.views.forms.ThresholdForm import ThresholdForm
 
@@ -17,8 +17,9 @@ class ClientConfigurationView(LoginRequiredMixin, View):
         pk = kwargs['client_pk']
         error = kwargs['error_message']
         error_message = error if error != None else ""
-        client = get_object_or_404(Client, pk=pk)
-
+        client = ClientManager.get_client(pk)
+        if client is None:
+            raise Http404
         return render(request, 'acquisition_presentation_server/ClientConfigurationView.html',
                       self._create_context(
                           request,
@@ -30,30 +31,30 @@ class ClientConfigurationView(LoginRequiredMixin, View):
         monitored_properties = request.POST.getlist('monitored_properties[]')
         property_for_dashboard = request.POST.get('show_on_dashboard[]')
         if client_conf.is_valid():
-            cc = ClientsConfigurator(
-                pk,
-                client_conf.cleaned_data["hostname"],
-                client_conf.cleaned_data["probing_cycles"],
-                [int(m) for m in monitored_properties],
-                property_for_dashboard,
-            )
-
             redirect_kwargs = {"client_pk": pk}
             try:
-                cc.apply_configuration()
+                ClientsConfigurator.apply_configuration(
+                    pk,
+                    client_conf.cleaned_data["hostname"],
+                    client_conf.cleaned_data["consecutive_probes_sent_count"],
+                    [int(m) for m in monitored_properties],
+                    property_for_dashboard,
+                    client_conf.get_monitoring_timespan()
+                )
             except Exception as e:
                 redirect_kwargs["error_message"] = str(e)
-            return HttpResponseRedirect(reverse("aps:ClientConfiguration", kwargs=redirect_kwargs))
+                return HttpResponseRedirect(reverse("aps:ClientConfiguration", kwargs=redirect_kwargs))
+            return HttpResponseRedirect(reverse("aps:ClientDetails", kwargs=redirect_kwargs))
         else:
             return render(request, 'acquisition_presentation_server/ClientConfigurationView.html',
                           self._create_context(
                               request,
-                              Client.objects.get(pk=pk),
+                              ClientManager.get_client(pk),
                               client_conf))
 
     def _create_context(self, request, client, client_form=None):
         monitored_properies = []
-        for property in client.monitored_properties.all():
+        for property in ClientManager.get_monitored_properties(client):
             monitored_properies.append(
                 {
                     "pk": property.pk,

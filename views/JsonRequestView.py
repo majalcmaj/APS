@@ -6,9 +6,10 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
-from acquisition_presentation_server.common import ClientsStateManager
+import acquisition_presentation_server.common.ClientManager
+from acquisition_presentation_server.common import ClientsStateManager, ClientManager
 from acquisition_presentation_server.common import ManageMonitoringData
-from acquisition_presentation_server.common.ClientsConfigurator import ClientsConfigurator
+from acquisition_presentation_server.common import ClientsConfigurator
 from acquisition_presentation_server.common.ClientsStateManager import ClientsManagerException
 from acquisition_presentation_server.models import ClientBase
 from acquisition_presentation_server.settings import LOGGER_NAME
@@ -25,48 +26,51 @@ class JsonRequestView(View):
     def post(self, request, *args, **kwargs):
         logger.error("{}: {}".format(request.content_type, request.body))
         if request.content_type == "aps/json":
-            json_data = json.loads(request.body.decode('utf-8'))
-
-            if json_data['message'] == 'monitoring_data':
-                client = ClientsStateManager.get_client(int(json_data['key']))
-                if client is not None:
-                    if client.configuration_pending is True:
-                        configuration = ClientsConfigurator.form_configuration_data_for_client(client)
-                        ClientsConfigurator.change_client_configuration_status(client, False)
-                        return JsonResponse({"result": "success", "configuration": configuration})
+            try:
+                json_data = json.loads(request.body.decode('utf-8'))
+                message = json_data['message']
+                if message == 'monitoring_data':
+                    client = ClientManager.get_client(self._extract_client_key(json_data))
+                    if client is not None:
+                        if client.configuration_pending is True:
+                            return self._return_client_configuration(client)
+                        else:
+                            ManageMonitoringData.process_data(client, json_data['monitored_properties'],
+                                                              json_data["timestamp"])
+                            return JsonResponse({"result": "success"})
                     else:
-                        ManageMonitoringData.process_data(client, json_data['monitored_properties'],
-                                                          json_data["timestamp"])
-                        return JsonResponse({"result": "success"})
-                else:
-                    logger.error("Client with key {} does not exist in database. Address: {}".format(
-                        json_data['key'],
-                        request.META['REMOTE_ADDR']))
-                    return JsonResponse({"result": "failure"})
+                        logger.error("Client with key {} does not exist in database. Address: {}".format(
+                            json_data['key'],
+                            request.META['REMOTE_ADDR']))
+                        return JsonResponse({"result": "failure"})
 
-            elif json_data['message'] == 'is_key_valid':
-                client = ClientsStateManager.get_client(int(json_data['key']))
-                return JsonResponse({"key_valid": client is not None})
+                elif message == 'is_key_valid':
+                    client = ClientManager.get_client_anystate(
+                        self._extract_client_key(json_data))
+                    return JsonResponse({"key_valid": client is not None})
 
-            elif json_data['message'] == 'get_client_configuration':
-                client = ClientsStateManager.get_client(int(json_data['key']))
-                if client is not None:
-                    if client.configuration_pending or client.is_configured:
-                        configuration = ClientsConfigurator.form_configuration_data_for_client(client)
-                        ClientsConfigurator.change_client_configuration_status(client, False)
-                        return JsonResponse({"configuration": configuration})
-                else:
-                    logger.error("Client with key {} does not exist in database. Address: {}".format(
-                        json_data['key'],
-                        request.META['REMOTE_ADDR']))
-                return JsonResponse({"configuration": None})
+                elif message == 'get_client_configuration':
+                    client = ClientManager.get_client_anystate(
+                        self._extract_client_key(json_data))
+                    if client is not None:
+                        if client.configuration_pending or client.is_configured:
+                            return self._return_client_configuration(client)
+                    else:
+                        logger.error("Client with key {} does not exist in database. Address: {}".format(
+                            json_data['key'],
+                            request.META['REMOTE_ADDR']))
+                    return JsonResponse({"configuration": None})
 
+                elif message == 'register':
+                    return self._register_client(json_data, request)
+            except ValueError:
+                pass
+        return JsonResponse(status=400, data={"content": "Bad request"})
 
-            elif json_data['message'] == 'register':
-                return self._register_client(json_data, request)
-
-
-
+    def _return_client_configuration(self, client):
+        configuration = ClientsConfigurator.form_configuration_data_for_client(client)
+        ClientsConfigurator.ack_configuration_applied(client)
+        return JsonResponse({"result": "success", "configuration": configuration})
 
     def _register_client(self, json_data, request):
         try:
@@ -80,4 +84,8 @@ class JsonRequestView(View):
         except ClientsManagerException as e:
             return JsonResponse({"result": "failed", "message": e.message}, status=403)
 
-
+    def _extract_client_key(self, json_data):
+        try:
+            return int(json_data.get('key'))
+        except TypeError:
+            raise ValueError

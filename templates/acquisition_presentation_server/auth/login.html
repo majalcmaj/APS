@@ -1,6 +1,8 @@
 {% extends "acquisition_presentation_server/skeletons/base_skeleton.html" %}
 {% block title %}APS - Login{% endblock %}
 {% block content %}
+    <div class="content">
+    <h1>Log in:</h1>
     <table style="margin-left:auto; margin-right:auto;">
         <form method="post" action="{% url "aps:login" %}">
             {%  csrf_token %}
@@ -10,4 +12,5 @@
             </tr>
         </form>
     </table>
+    </div>
 {% endblock %}

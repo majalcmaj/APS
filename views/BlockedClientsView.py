@@ -3,14 +3,14 @@ from django.http.response import HttpResponseRedirect
 from django.shortcuts import render
 from django.views import View
 
+from acquisition_presentation_server.common import ClientManager
 from acquisition_presentation_server.common import ClientsStateManager
-from acquisition_presentation_server.models import BlockedClient
 
 
 class BlockedClientsView(LoginRequiredMixin, View):
     login_url = '/aps/login/'
     def get(self, request, *args, **kwargs):
-        blocked_clients = BlockedClient.objects.all()
+        blocked_clients = ClientManager.get_all_blocked()
         context = {"current_url": request.get_full_path(), "blocked_clients": blocked_clients}
         return render(request, 'acquisition_presentation_server/BlockedClientsView.html', context)
 

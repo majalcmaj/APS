@@ -1,17 +1,21 @@
-from acquisition_presentation_server.models import MonitoredProperty, ClientBase, PendingClient, Client, BlockedClient
+from acquisition_presentation_server.models import MonitoredProperty, ClientBase, PendingClient, BlockedClient
 
-
+"""
+File contains functions which take care of registering new pending client and
+altering client states, which are PENDING(newly registered), MONITORED (machine is
+accepted to the system and its properties are monitored) and BLOCKED (machine has been
+excluded from monitoring)
+"""
 def register_new_pending_client(client_hostname, client_address, monitored_properties,
                                 base_probing_interval):
-    # TODO Rozrozniac przychodzace klienty
-    # if len(Client.objects.filter(hostname=client_hostname)) > 0:
-    #     raise ClientsManagerException("Already registered")
-    # if len(BlockedClient.objects.filter(hostname=client_hostname)) > 0:
-    #     raise ClientsManagerException("Already blocked")
-    # if len(PendingClient.objects.filter(hostname=client_hostname)) > 0:
-    #     raise ClientsManagerException("Already pending")
-    prop_on_dashboard = None
-
+    """
+    Registers client as pending, based on info sent in initial message
+    :param client_hostname: Hostname of client being registered
+    :param client_address: IP from which the client request has come
+    :param monitored_properties: List of properties which client is able to monitor with units.
+    :param base_probing_interval: interval between two consecutive probes on client's side
+    :return: public key of client in database
+    """
     pending_client = PendingClient(
         hostname=client_hostname,
         ip_address=client_address,
@@ -29,32 +33,33 @@ def register_new_pending_client(client_hostname, client_address, monitored_prope
 
 
 def accept_pending_client(pk):
+    """
+    Alter pending client's state to MONITORED
+    :param pk: client's pk
+    """
     pending_client = PendingClient.objects.get(pk=pk)
     pending_client.state = ClientBase.MONITORED
     pending_client.save()
 
 
 def block_pending_client(pk):
+    """
+    Alter pending client's state to BLOCKED
+    :param pk: client's pk
+    """
     pending_client = PendingClient.objects.get(pk=pk)
     pending_client.state = ClientBase.BLOCKED
     pending_client.save()
 
 
 def accept_blocked_client(pk):
+    """
+    Alter blocked client's state to MONITORED
+    :param pk: client's pk
+    """
     pending_client = BlockedClient.objects.get(pk=pk)
     pending_client.state = ClientBase.MONITORED
     pending_client.save()
-
-
-def get_client(pk):
-    try:
-        return ClientBase.objects.get(pk=pk)
-    except ClientBase.DoesNotExist:
-        return None
-
-def remove_client(pk):
-    client = Client.objects.get(pk=pk)
-    client.delete()
 
 
 class ClientsManagerException(BaseException):

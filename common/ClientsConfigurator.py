@@ -1,66 +1,86 @@
 import logging
 
-from django.db import transaction
-
+from acquisition_presentation_server import settings
 from acquisition_presentation_server.common import RRDtoolManager
 from acquisition_presentation_server.models import Client
-from acquisition_presentation_server.settings import LOGGER_NAME
 
-logger = logging.getLogger(LOGGER_NAME)
+logger = logging.getLogger(settings.LOGGER_NAME)
 
-class ClientsConfigurator:
+"""
+File contains functions and exceptions used when configuring client
+"""
+
+def apply_configuration(pk, hostname, probing_cycles, monitored_properties,
+                        property_for_dashboard, monitoring_timespan):
     """
-    Class which takes care of configuring the client (monitored machine).
+    Applies configuration for the client - sets appropriate values in database, which
+    are collected by client at nearest request
+    :param pk: Client's public key in database
+    :param hostname: Client's hostname
+    :param probing_cycles: Count of consecutive probes which are averaged before sending data
+    to server
+    :param monitored_properties: list of monitoring properties' public key which are desired to be
+    monitored
+    :param property_for_dashboard: property the chart of which should be present on dashboard
+    :param monitoring_timespan: A timespan for which the client should be monitored, in seconds
+    :return: None
+    :raises: Exception related to client not found and other unwanted operations
     """
-    def __init__(self, pk, hostname, probing_cycles, monitored_properties,
-                 property_for_dashbaord):
-        self._pk = pk
-        self._hostname = hostname
-        self._probing_cycles = probing_cycles
-        self._monitored_properties = monitored_properties
-        self._prop_on_dashboard = property_for_dashbaord
+    client = Client.objects.get(pk=pk)
+    client.configuration_pending = True
+    client.hostname = hostname
+    client.consecutive_probes_sent_count = int(probing_cycles)
+    if client.consecutive_probes_sent_count * client.base_probing_interval > monitoring_timespan:
+        raise ClientConfigurationException(message="Timespan has to be greater than "
+                                           "probing interval!")
+    client.monitoring_timespan = monitoring_timespan
 
-    @transaction.atomic
-    def apply_configuration(self):
-        client = Client.objects.get(pk=self._pk)
-        client.configuration_pending = True
-        client.hostname = self._hostname
-        client.probing_interval = int(self._probing_cycles)
+    if property_for_dashboard is not None:
+        client.property_on_dashboard = client.monitored_properties.get(
+            pk=property_for_dashboard
+        )
 
-        if self._prop_on_dashboard is not None:
-            client.property_on_dashboard = client.monitored_properties.get(
-                pk=self._prop_on_dashboard
-            )
+    for m in client.monitored_properties.all():
+        m.monitored = True if m.pk in monitored_properties else False
+        m.save()
 
-        for m in client.monitored_properties.all():
-            # m.thresholds.all().delete()
-            m.monitored = True if m.pk in self._monitored_properties else False
-            m.save()
+    client.is_configured = True
+    client.save()
+    RRDtoolManager.create_rrd(client)
 
-        client.is_configured = True
-        client.save()
-        RRDtoolManager.create_rrd(client)
 
-    @staticmethod
-    def form_configuration_data_for_client(client):
-        if client.is_configured:
-            configuration = {
-                "monitoring_parameters": [mp.name for mp in
-                                          client.monitored_properties.filter(monitored=True)],
-                "probing_interval": client.probing_interval
-            }
-            return configuration
-        else:
-            return None
+def form_configuration_data_for_client(client):
+    """
+    Prepare JSON message containing data with client configuration
+    :param client: client for which the configuration data should be prepared
+    :return: message or none if client is not configured
+    """
+    if client.is_configured:
+        configuration = {
+            "monitoring_parameters": [mp.name for mp in
+                                      client.monitored_properties.filter(monitored=True)],
+            #todo ZMIENIC na consecutive_probes_sent_count!
+            "probing_interval": client.consecutive_probes_sent_count
+        }
+        return configuration
+    else:
+        return None
 
-    @staticmethod
-    @transaction.atomic
-    def change_client_configuration_status(client, status):
-        client.configuration_pending = status
-        client.save()
+
+def ack_configuration_applied(client):
+    """
+    Sets switch configuration_pending in client database entry to false, which means
+        that there is no new configuration awaiting for client
+    :param client: client to alter
+    """
+    client.configuration_pending = False
+    client.save()
 
 
 class ClientConfigurationException(BaseException):
+    """
+    Thrown when there is a problem with client configuration
+    """
     def __init__(self, message=None):
         self._message = "Error during configuring client" if message is None else message
         super().__init__(self._message)

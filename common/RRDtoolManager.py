@@ -4,17 +4,20 @@ import time
 
 from acquisition_presentation_server import settings
 
-
+# TODO: Artur komentarze
 def create_rrd(client):
     rrd_database_name = _get_rrd_abs_path(client.pk)
-    database_update_frequency = client.probing_interval * client.base_probing_interval
+    database_update_frequency = client.consecutive_probes_sent_count * client.base_probing_interval
     monitoring_parameters = []
     for mp in client.monitored_properties.filter(monitored=True):
         if mp.type != 'string':
             monitoring_parameters.append(
-                "DS:" + mp.name + ":GAUGE:" + str( 2 * database_update_frequency) + ":U:U")
+                "DS:" + mp.name + ":GAUGE:" + str(2 * database_update_frequency) + ":U:U")
 
-    rrd_archives = ["RRA:AVERAGE:0.99:1:120"]
+    database_probes_count = int(client.monitoring_timespan/
+                                                   (client.base_probing_interval *
+                                                    client.consecutive_probes_sent_count))
+    rrd_archives = ["RRA:AVERAGE:0.99:1:{}".format(database_probes_count)]
 
     command = [rrd_database_name,
                '--start', str(int(time.time())),
@@ -38,26 +41,6 @@ def update_rrd(client, records, time):
 
     rrdtool.update(rrd_database_name, '--template', template_string[1:], record_string)
 
-
-# def fetch_data(client, since):
-#     rrd_database_name = _get_rrd_abs_path(client.pk)
-#     records = rrdtool.fetch(rrd_database_name, 'AVERAGE', '--start', str(since))
-#     records_count = len(records[2])
-#     if records_count == 0:
-#         return None, None
-#     else:
-#         # start, end, step = records[0]
-#         # times = list(range(start, end, step))
-#
-#         result = {'unix_time': records[0]}
-#         data = {}
-#         order = records[1]
-#         for i in range(0, len(order)):
-#             records_array = [value[i] for value in records[2]]
-#             data[order[i]] = records_array
-#
-#         result['data'] = data
-#         return result, records[0][1]
 
 def fetch_data(client, since):
     rrd_database_name = _get_rrd_abs_path(client.pk)

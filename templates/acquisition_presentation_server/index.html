@@ -14,29 +14,24 @@
 {% endblock %}
 {% block content %}
     <div class="col-sm-3 col-md-2 sidebar">
-        <form>
+        <form method="post" action="{% url "aps:index" %}">
+            {% csrf_token %}
+            {{ filtering_form.non_field_errors }}
             <div class="form-group">
-
-                <label for="filter_clients_textbox">Filter clients by hostname</label>
-                <input class="form-control" id="filter_clients_textbox" type="text" class="form-control"
-                       placeholder="Search...">
+                {{ filtering_form.filter_regex.errors }}
+                <label for="{{ filtering_form.filter_regex.id_for_label }}">Filter hostnames</label>
+                {{ filtering_form.filter_regex }}
             </div>
             <div class="form-group">
-
-                <button type="submit" class="btn btn-warning">Apply sorting</button>
+                {{ filtering_form.sorting.errors }}
+                <label for="{{ filtering_form.sorting.id_for_label }}">Sort hostnames</label>
+                {% for radio in filtering_form.sorting %}
+                    <p>{{ radio }}</p>
+                {% endfor %}
             </div>
-        </form>
-        <hr/>
-        <form>
-            <label>Sort clients</label>
-            <div class="checkbox">
-                <label><input type="checkbox" name="client_sorting[]" title="By hostname"/>By hostname</label>
-                <br/>
-                <label><input type="checkbox" name="client_sorting[]" title="By IP address"/>By IP address</label>
-                <hr/>
-                <label><input type="checkbox" name="descending" title="Descending"/>Descending</label>
+            <div class="form-group">
+                <button type="submit" class="btn btn-warning" name="apply_filtering">Apply</button>
             </div>
-            <button type="submit" class="btn btn-warning">Apply sorting</button>
         </form>
     </div>
     <div class="container-fluid col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
@@ -48,7 +43,7 @@
                             <div class="panel-title">
                                 <div style="display: inline-block; padding-top: 5px; width: 100%">
                                     <span class="accent">{{ client.hostname }}</span>
-                                    <span> {{ client.ip_address }}:{{ client.port }}</span>
+                                    <span> {{ client.ip_address }}</span>
 
                                     <div style="display: inline-block;float: right">
                                         {% if client.has_alerts %}

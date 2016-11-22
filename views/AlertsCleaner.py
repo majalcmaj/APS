@@ -4,7 +4,6 @@ from django.urls.base import reverse
 from django.views import View
 
 from acquisition_presentation_server.common import AlertManager
-from acquisition_presentation_server.models import Client, Alert
 
 
 class AlertsCleaner(LoginRequiredMixin, View):

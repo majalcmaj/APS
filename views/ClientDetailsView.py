@@ -1,20 +1,23 @@
 import json
-
 import time
-from django.shortcuts import render, get_object_or_404
+
+from django.http.response import Http404
+from django.shortcuts import render
 from django.views import View
 
-from acquisition_presentation_server.common.DataProvider import get_client_data
-from acquisition_presentation_server.models import Client
+from acquisition_presentation_server.common import ClientManager
+from acquisition_presentation_server.common import DataProvider
 
 
 class ClientDetailsView(View):
     def get(self, request, *args, **kwargs):
         pk = kwargs['client_pk']
-        client = get_object_or_404(Client, pk=pk)
-        client_data, _ = get_client_data(client, int(time.time()) - 120)
+        client = ClientManager.get_client(pk)
+        if client is None:
+            raise Http404
+        client_data, _ = DataProvider.get_client_data(client, int(time.time()) - client.monitoring_timespan)
         monitoring_data = json.dumps(client_data) \
             if client.is_configured and client_data is not None else []
         context = {"client": client, "monitoring_data": monitoring_data,
-                   "update_ratio_seconds": 5, "alerts":client.alerts.all()}
+                   "update_ratio_seconds": 5, "alerts": ClientManager.get_client_alerts(client)}
         return render(request, 'acquisition_presentation_server/ClientDetailView.html', context)

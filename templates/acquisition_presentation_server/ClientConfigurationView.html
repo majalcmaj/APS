@@ -26,11 +26,66 @@
                 <div role="tabpanel" class="tab-pane active" id="basic_configuration">
                     <form id="conf_form" method="post" action="{{ current_url }}">
                         {% csrf_token %}
+                        {{ form.non_field_errors }}
                         <table class="table">
-                        <tbody>
-                            {{ form.as_table }}
+                            <tbody>
                             <tr>
-                                <td>Monitored properties:</td>
+                                <td>
+                                    <label for="{{ form.hostname.id_for_label }}">{{ form.hostname.label }}</label>
+                                </td>
+                                <td>
+                                    {{ form.hostname }} <span class="error">{{ form.hostname.errors }}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label for="{{ form.ip_address.id_for_label }}">{{ form.ip_address.label }}</label>
+                                </td>
+                                <td>
+                                    {{ form.ip_address }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label for="{{ form.base_probing_interval.id_for_label }}">{{ form.base_probing_interval.label }}</label>
+                                </td>
+                                <td>
+                                    {{ form.base_probing_interval }} <span
+                                        class="error">{{ form.base_probing_interval.errors }}</span>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <label for="{{ form.consecutive_probes_sent_count.id_for_label }}">{{ form.consecutive_probes_sent_count.label }}</label>
+                                </td>
+                                <td>
+                                    {{ form.consecutive_probes_sent_count }} <span
+                                        class="error">{{ form.consecutive_probes_sent_count.errors }}</span>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <div><label>Database memory length</label></div>
+                                </td>
+                                <td>
+                                    <div>
+                                    <span><label
+                                            for="{{ form.monitoring_days.id_for_label }}">{{ form.monitoring_days.label }}</label>{{ form.monitoring_days }}</span>
+                                        <span><label
+                                                for="{{ form.monitoring_hours.id_for_label }}">{{ form.monitoring_hours.label }}</label>{{ form.monitoring_hours }}</span>
+                                        <span><label
+                                                for="{{ form.monitoring_minutes.id_for_label }}">{{ form.monitoring_minutes.label }}</label>{{ form.monitoring_minutes }}</span>
+                                        <span><label
+                                                for="{{ form.monitoring_seconds.id_for_label }}">{{ form.monitoring_seconds.label }}</label>{{ form.monitoring_seconds }}</span>
+                                    </div>
+                                </td>
+                            </tr>
+
+
+                            <tr>
+                                <td><label>Monitored properties:<label></td>
                                 <td>
                                     <table class="table">
                                         <tr>
@@ -80,7 +135,7 @@
                                     </button>
                                 </td>
                             </tr>
-                        </tbody>
+                            </tbody>
                         </table>
                     </form>
                     <script type="text/javascript">

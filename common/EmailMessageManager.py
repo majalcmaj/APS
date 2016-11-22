@@ -3,13 +3,11 @@ import threading
 from email.mime.text import MIMEText
 
 from acquisition_presentation_server import settings
-from acquisition_presentation_server.models import Client
 
-
-# END FOR TESTING PURPOSES
+# TODO Artur - dokumentacja!
 
 def send_message(mime_message):
-    sending_thread = threading.Thread(target=EmailMessageManager._send_message,
+    sending_thread = threading.Thread(target=_send_message,
                                       kwargs={"mime_message": mime_message})
     sending_thread.start()
 
@@ -49,11 +47,3 @@ def create_alert_custom_message(client, value_name, alert_value, threshold_value
     message['From'] = settings.EMAIL_NOTIFICATION_LOGIN
 
     return message
-
-
-# FOR TESTING PURPOSES
-if __name__ == '__main__':
-    client = Client.objects.get(pk=10)
-    alert_message = EmailMessageManager.create_alert_message(client, "cpu_usage", 99, 90)
-    EmailMessageManager.send_message(alert_message)
-    # END FOR TESTING PURPOSES

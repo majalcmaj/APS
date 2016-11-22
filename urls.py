@@ -15,7 +15,7 @@ app_name = 'aps'
 urlpatterns = [
     url(r'^$', IndexView.as_view(), name='index'),
     url(r'^JsonRequest$', JsonRequestView.as_view(), name='JsonRequest'),
-    url(r'^ClientConfiguration/(?P<client_pk>[0-9]+)(/(?P<error_message>.*))?$',
+    url(r'^ClientConfiguration/(?P<client_pk>[0-9]+)/(?P<error_message>.*)?$',
         ClientConfigurationView.as_view(), name='ClientConfiguration'),
     url(r'^ClientDetails/(?P<client_pk>[0-9]+)$',
         ClientDetailsView.as_view(), name='ClientDetails'),
