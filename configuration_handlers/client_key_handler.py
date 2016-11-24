@@ -23,7 +23,7 @@ class ClientKeyHandler:
 
     @staticmethod
     def is_key_valid(configuration,client_key):
-        url = "http://{0}:{1}/aps/JsonRequest".format(configuration['SERVER_IP'], configuration['SERVER_PORT'])
+        url = "http://{0}:{1}/aps_client/JsonRequest".format(configuration['SERVER_IP'], configuration['SERVER_PORT'])
         headers = {"content-type": "aps/json"}
         payload = {"message": "is_key_valid", "key": client_key}
 

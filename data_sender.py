@@ -81,7 +81,7 @@ class DataSender:
                     time.sleep(base_probing_interval - time_difference)
 
     def _form_status_data_request(self, agregator):
-        url = "http://{0}:{1}/aps/JsonRequest".format(self.server_ip, self.server_port)
+        url = "http://{0}:{1}/aps_client/JsonRequest".format(self.server_ip, self.server_port)
         headers = {"content-type": "aps/json"}
         payload = {"message": "monitoring_data",
                    "monitored_properties": agregator,

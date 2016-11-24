@@ -1,8 +1,8 @@
 {
-  "BASE_USERNAME":"artur",
-  "BASE_USER_GROUP":"artur",
+  "BASE_USERNAME":"mc",
+  "BASE_USER_GROUP":"mc",
 
-  "SERVER_IP": "192.168.1.8",
+  "SERVER_IP": "192.168.0.100",
   "SERVER_PORT": "13000",
 
   "MONITORED_PROPERTIES": {
@@ -15,5 +15,5 @@
   "LUMEL_IP": "localhost",
   "LUMEL_PORT": "8300",
 
-  "BASE_PROBING_INTERVAL": 3
+  "BASE_PROBING_INTERVAL": 2
 }

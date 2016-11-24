@@ -53,7 +53,7 @@ class ClientManager:
             self._data_sender.start_sending_data()
 
     def register_on_server(self, configuration):
-        url = "http://{0}:{1}/aps/JsonRequest".format(configuration['SERVER_IP'], configuration['SERVER_PORT'])
+        url = "http://{0}:{1}/aps_client/JsonRequest".format(configuration['SERVER_IP'], configuration['SERVER_PORT'])
         headers = {"content-type": "aps/json"}
         payload = {"message": "register",
                    "monitored_properties": configuration['MONITORED_PROPERTIES'],
