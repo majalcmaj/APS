@@ -16,9 +16,9 @@ class MockClient:
     HOSTNAME = "WORKER{}"
 
     def __init__(self, *args, **kwargs):
-        from acquisition_presentation_server.common import RRDtoolManager
-        from acquisition_presentation_server.models import Client
-        from acquisition_presentation_server.common import ClientsStateManager
+        from common.libs import RRDtoolManager
+        from common.models import Client
+        from common.libs import ClientsStateManager
         self._counter = 0
         self._key = ClientsStateManager.register_new_pending_client(
             "CLIENT",
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     except:
         pass
     os.system("python3 manage.py flush")
-    os.environ["DJANGO_SETTINGS_MODULE"] = "DjangoSites.settings"
+    os.environ["DJANGO_SETTINGS_MODULE"] = "APS.settings"
     django.setup()
     from django.contrib.auth.models import User
 

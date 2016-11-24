@@ -29,8 +29,9 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'acquisition_presentation_server.apps.AcquisitionPresentationServerConfig',
-    'chartjs',
+    'acquisition_server.apps.AcquisitionServerConfig',
+    'common.apps.CommonConfig',
+    'presentation_server.apps.PresentationServerConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -129,7 +130,35 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static/")
-try:
-    from acquisition_presentation_server.settings import *
-except ImportError:
-    pass
+
+LOGGER_NAME = "django"
+RRD_DATABASE_DIRECTORY = "/var/rrddb"
+
+EMAIL_SERVER_ADDRESS = "smtp.gmail.com"
+EMAIL_SERVER_PORT = 587
+EMAIL_NOTIFICATION_LOGIN = "alert.server.monitor@gmail.com"
+EMAIL_NOTIFICATION_PASSWORD = "Kupka1234"
+NOTIFIED_EMAILS = [
+    "majalcmaj@gmail.com"
+]
+
+# Logging settings
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'INFO',
+        },
+    },
+    'loggers': {
+        "django": {
+            'handlers': ['console'],
+            'propagate': True,
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        },
+    },
+}
+
+LOGIN_REDIRECT_URL = "aps:index"

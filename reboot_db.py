@@ -3,10 +3,10 @@ import os, shutil, django
 
 try:
     os.remove('db.sqlite3')
-    shutil.rmtree("acquisition_presentation_server/migrations")
+    shutil.rmtree("common/migrations")
 except Exception:
     pass
-os.system("python3 manage.py makemigrations acquisition_presentation_server")
+os.system("python3 manage.py makemigrations common")
 os.system("python3 manage.py migrate")
 os.environ["DJANGO_SETTINGS_MODULE"]="APS.settings"
 django.setup()
