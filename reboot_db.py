@@ -8,7 +8,7 @@ except Exception:
     pass
 os.system("python3 manage.py makemigrations acquisition_presentation_server")
 os.system("python3 manage.py migrate")
-os.environ["DJANGO_SETTINGS_MODULE"]="DjangoSites.settings"
+os.environ["DJANGO_SETTINGS_MODULE"]="APS.settings"
 django.setup()
 from django.contrib.auth.models import User
 user = User(username="admin")

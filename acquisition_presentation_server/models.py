@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models.fields.related import ManyToManyField
 
-from DjangoSites import settings
+from APS import settings
 
 
 class ClientBase(models.Model):
