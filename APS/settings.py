@@ -139,7 +139,7 @@ EMAIL_SERVER_PORT = 587
 EMAIL_NOTIFICATION_LOGIN = "alert.server.monitor@gmail.com"
 EMAIL_NOTIFICATION_PASSWORD = "Kupka1234"
 NOTIFIED_EMAILS = [
-    "majalcmaj@gmail.com"
+    "artur.zimnicki1@gmail.com"
 ]
 
 # Logging settings

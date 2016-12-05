@@ -26,30 +26,37 @@ class ClientConfigurationView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         pk = kwargs['client_pk']
-        client_conf = ClientConfigurationForm(request.POST)
-        monitored_properties = request.POST.getlist('monitored_properties[]')
-        property_for_dashboard = request.POST.get('show_on_dashboard[]')
-        if client_conf.is_valid():
-            redirect_kwargs = {"client_pk": pk}
-            try:
-                ClientsConfigurator.apply_configuration(
-                    pk,
-                    client_conf.cleaned_data["hostname"],
-                    client_conf.cleaned_data["consecutive_probes_sent_count"],
-                    [int(m) for m in monitored_properties],
-                    property_for_dashboard,
-                    client_conf.get_monitoring_timespan()
-                )
-            except Exception as e:
-                redirect_kwargs["error_message"] = str(e)
-                return HttpResponseRedirect(reverse("aps:ClientConfiguration", kwargs=redirect_kwargs))
-            return HttpResponseRedirect(reverse("aps:ClientDetails", kwargs=redirect_kwargs))
-        else:
-            return render(request, 'acquisition_presentation_server/ClientConfigurationView.html',
-                          self._create_context(
-                              request,
-                              ClientManager.get_client(pk),
-                              client_conf))
+        if request.POST.get("delete") is not None:
+            if (ClientManager.remove_client_anystate(pk)):
+                return HttpResponseRedirect(reverse("aps:index"))
+            else:
+                redirect_kwargs = {"client_pk": pk, "error_message": "client could not be deleted"}
+                HttpResponseRedirect(reverse("aps:ClientConfiguration", kwargs=redirect_kwargs))
+        elif request.POST.get("configure") is not None:
+            client_conf = ClientConfigurationForm(request.POST)
+            monitored_properties = request.POST.getlist('monitored_properties[]')
+            property_for_dashboard = request.POST.get('show_on_dashboard[]')
+            if client_conf.is_valid():
+                redirect_kwargs = {"client_pk": pk}
+                try:
+                    ClientsConfigurator.apply_configuration(
+                        pk,
+                        client_conf.cleaned_data["hostname"],
+                        client_conf.cleaned_data["consecutive_probes_sent_count"],
+                        [int(m) for m in monitored_properties],
+                        property_for_dashboard,
+                        client_conf.get_monitoring_timespan()
+                    )
+                except Exception as e:
+                    redirect_kwargs["error_message"] = str(e)
+                    return HttpResponseRedirect(reverse("aps:ClientConfiguration", kwargs=redirect_kwargs))
+                return HttpResponseRedirect(reverse("aps:ClientDetails", kwargs=redirect_kwargs))
+            else:
+                return render(request, 'acquisition_presentation_server/ClientConfigurationView.html',
+                              self._create_context(
+                                  request,
+                                  ClientManager.get_client(pk),
+                                  client_conf))
 
     def _create_context(self, request, client, client_form=None):
         monitored_properies = []

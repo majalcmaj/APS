@@ -7,6 +7,14 @@ from common.models import Threshold, Alert
 
 logger = logging.getLogger("django")
 
+def get_client_data(client, since):
+    """
+    Get monitoring data of client since provided time
+    :param client: client for which the data should be collected
+    :param since: unix timestamp(in seconds); time point since when the data from RRD database should be collected
+    :return: monitoring data
+    """
+    return RRDtoolManager.fetch_data(client, since)
 
 def process_data(client, records, timestamp):
     """

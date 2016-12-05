@@ -1,7 +1,7 @@
 from django.test import TestCase
 
-from acquisition_presentation_server.common import AlertManager
-from acquisition_presentation_server.models import Client, Alert
+from common.libs import AlertManager
+from common.models import Client, Alert
 
 
 class AlertManagerTestCase(TestCase):

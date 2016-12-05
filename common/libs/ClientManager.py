@@ -39,14 +39,6 @@ def get_client(pk):
         return None
 
 
-def get_client_alerts(client):
-    """
-    :param client: An object representing monitored client, of which alerts should be returned
-    :return: All alerts for specified client
-    """
-    return client.alerts.all()
-
-
 def get_client_anystate(pk):
     """
     :param pk: Public key identifying client
@@ -88,7 +80,11 @@ def remove_client_anystate(pk):
     """
     Remove pending, blocked or monitored client's data
     :param pk:
-    :return:
+    :return:bool:
     """
-    client = ClientBase.objects.get(pk=pk)
-    client.delete()
+    try:
+        client = ClientBase.objects.get(pk=pk)
+        client.delete()
+        return True
+    except ClientBase.DoesNotExist:
+        return False

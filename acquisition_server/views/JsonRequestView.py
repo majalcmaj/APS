@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from APS.settings import LOGGER_NAME
 from common.libs import ClientsConfigurator
 from common.libs import ClientsStateManager, ClientManager
-from common.libs import MonitoringDataCollector
+from common.libs import MonitoringDataManager
 from common.libs.ClientsStateManager import ClientsManagerException
 
 logger = logging.getLogger(LOGGER_NAME)
@@ -33,8 +33,8 @@ class JsonRequestView(View):
                         if client.configuration_pending is True:
                             return self._return_client_configuration(client)
                         else:
-                            MonitoringDataCollector.process_data(client, json_data['monitored_properties'],
-                                                                 json_data["timestamp"])
+                            MonitoringDataManager.process_data(client, json_data['monitored_properties'],
+                                                               json_data["timestamp"])
                             return JsonResponse({"result": "success"})
                     else:
                         logger.error("Client with key {} does not exist in database. Address: {}".format(

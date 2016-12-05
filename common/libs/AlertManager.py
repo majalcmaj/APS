@@ -23,3 +23,11 @@ def delete_all_for_client(client_pk):
     """
     for alert in Client.objects.get(pk=client_pk).alerts.all():
         alert.delete()
+
+
+def get_client_alerts(client):
+    """
+    :param client: An object representing monitored client, of which alerts should be returned
+    :return: All alerts for specified client
+    """
+    return client.alerts.all()
