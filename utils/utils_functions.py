@@ -1,5 +1,6 @@
 import os, pwd, grp
-
+from logging.handlers import RotatingFileHandler
+from configuration.constant_values import LOGGING_TEMP_FILE
 
 def read_from_pipe(pipe):
     message = b''
@@ -34,3 +35,22 @@ def yes_no_prompt(question):
         return True
     else:
         return False
+
+
+class MyRotatingHandler(RotatingFileHandler):
+    def __init__(self, filename, mode='a', maxBytes=0, encoding=None, delay=0):
+        RotatingFileHandler.__init__(self, LOGGING_TEMP_FILE, mode, maxBytes, 1, encoding, delay)
+        self.custom_name = filename
+
+    def doRollover(self):
+        if self.stream:
+            self.stream.close()
+            self.stream = None
+
+        destiny_filename = self.custom_name
+        if os.path.exists(destiny_filename):
+            os.remove(destiny_filename)
+        if os.path.exists(self.baseFilename):
+            os.rename(self.baseFilename, destiny_filename)
+
+        self.stream = self._open()

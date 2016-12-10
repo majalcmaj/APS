@@ -1,6 +1,8 @@
-import requests
 import json
-import constant_values
+import logging
+import requests
+
+from configuration import constant_values
 
 
 class ClientKeyHandler:
@@ -23,16 +25,19 @@ class ClientKeyHandler:
 
     @staticmethod
     def is_key_valid(configuration,client_key):
-        url = "http://{0}:{1}/aps_client/JsonRequest".format(configuration['SERVER_IP'], configuration['SERVER_PORT'])
+        url = "http://{0}:{1}/aps/JsonRequest".format(configuration['SERVER_IP'], configuration['SERVER_PORT'])
         headers = {"content-type": "aps/json"}
         payload = {"message": "is_key_valid", "key": client_key}
+        logger = logging.getLogger("aps")
 
         try:
             response = requests.post(url, data=json.dumps(payload), headers=headers)
-            print("KEY_VALID:", response.json())
+            logger.info("KEY_VALID: {}".format(response.json()))
+            # print("KEY_VALID:", response.json())
             return response.json()['key_valid']
         except requests.ConnectionError:
-            print("Could not connect to server and get key.")
+            logger.error("Could not connect to server and get key.")
+            # print("Could not connect to server and get key.")
         return None
 
 

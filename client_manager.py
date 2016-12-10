@@ -2,17 +2,19 @@ import json
 import os
 import socket
 import time
+import logging
 from multiprocessing import Process
 
 import requests
 
-import constant_values
 import utils.utils_functions as utils_functions
+from acquisition_layer.data_sender import DataSender
+from configuration import constant_values
 from configuration_handlers.client_conifguration_handler import ClientConfigurationHandler
 from configuration_handlers.client_key_handler import ClientKeyHandler
-from data_sender import DataSender
-from hardware_data_collector import HardwareDataCollector
-from interrupt_handler import InterruptHandler
+from hardware_layer.hardware_data_collector import HardwareDataCollector
+from utils.interrupt_handler import InterruptHandler
+from utils.utils_functions import MyRotatingHandler
 
 
 class ClientManager:
@@ -24,6 +26,7 @@ class ClientManager:
                                        self._configuration['SERVER_PORT'],
 
                                        int(self._configuration['BASE_PROBING_INTERVAL']))
+        self.logger = logging.getLogger("aps")
 
     def run(self):
         interrupt_handler = InterruptHandler()
@@ -31,16 +34,18 @@ class ClientManager:
 
         # if we already have key then we dont have to register on server
         self._client_key = ClientKeyHandler.get_assigned_client_key()
-        print("CURRENT KEY:", self._client_key)
+        # print("CURRENT KEY:", self._client_key)
+        self.logger.info("CURRENT KEY:{}".format(self._client_key))
 
-        if self._client_key is None or ClientKeyHandler.is_key_valid(self._configuration,self._client_key) is False:
+        if self._client_key is None or ClientKeyHandler.is_key_valid(self._configuration, self._client_key) is False:
             # getting authorization key for next steps
             response = self.register_on_server(self._configuration)
             if response.status_code == 200:
                 self._client_key = response.json()['key']
                 ClientKeyHandler.save_client_key(self._client_key)
             elif response.status_code == 403:
-                print("Could not connect to server during registration:", response.status_code)
+                self.logger.error("Could not connect to server during registration:{}".format(response.status_code))
+                # print("Could not connect to server during registration:", response.status_code)
                 exit(-1)
 
         # getting configuration from server
@@ -53,7 +58,7 @@ class ClientManager:
             self._data_sender.start_sending_data()
 
     def register_on_server(self, configuration):
-        url = "http://{0}:{1}/aps_client/JsonRequest".format(configuration['SERVER_IP'], configuration['SERVER_PORT'])
+        url = "http://{0}:{1}/aps/JsonRequest".format(configuration['SERVER_IP'], configuration['SERVER_PORT'])
         headers = {"content-type": "aps/json"}
         payload = {"message": "register",
                    "monitored_properties": configuration['MONITORED_PROPERTIES'],
@@ -64,10 +69,12 @@ class ClientManager:
         while True:
             try:
                 response = requests.post(url, data=json.dumps(payload), headers=headers)
-                print("Connected to server")
+                logger.info("Connected to server")
+                #print("Connected to server")
                 return response
             except requests.ConnectionError:
-                print("Could not connect to server. Trying again...")
+                logger.error("Could not connect to server. Trying again...")
+                # print("Could not connect to server. Trying again...")
                 time.sleep(5)
 
     def get_configuration(self):
@@ -79,7 +86,8 @@ class ClientManager:
                 ClientConfigurationHandler.save_current_configuration(client_configuration)
                 break
             else:
-                print("Configuration is not set by server")
+                logger.info("Configuration is not set by server")
+                # print("Configuration is not set by server")
 
             time.sleep(5)
 
@@ -104,5 +112,13 @@ if __name__ == '__main__':
 
     hardware_data_collector_process.start()
     utils_functions.drop_privileges(configuration['BASE_USERNAME'], configuration['BASE_USER_GROUP'])
+
+    # setting logging
+    logger = logging.getLogger("aps")
+    logger.setLevel("DEBUG")
+    handler = MyRotatingHandler(constant_values.LOGGING_BASE_FILE, maxBytes=1024*200)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
 
     ClientManager(w_command_pipe, r_result_pipe, configuration).run()

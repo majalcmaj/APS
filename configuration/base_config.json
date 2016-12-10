@@ -1,8 +1,8 @@
 {
-  "BASE_USERNAME":"mc",
-  "BASE_USER_GROUP":"mc",
+  "BASE_USERNAME":"artur",
+  "BASE_USER_GROUP":"artur",
 
-  "SERVER_IP": "192.168.0.100",
+  "SERVER_IP": "127.0.0.1",
   "SERVER_PORT": "13000",
 
   "MONITORED_PROPERTIES": {

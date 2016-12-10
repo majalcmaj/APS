@@ -1,8 +1,8 @@
 import json
 
-import hardware_functions
+from hardware_layer import hardware_functions
+from hardware_layer.lumel_connection import LumelConnection
 from utils import utils_functions
-from lumel_connection import LumelConnection
 
 
 class HardwareDataCollector:

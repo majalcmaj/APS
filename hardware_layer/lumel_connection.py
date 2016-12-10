@@ -1,6 +1,7 @@
 import socket
 import struct
-from crc_calculator import CRCCalculator
+
+from utils.crc_calculator import CRCCalculator
 
 
 class LumelConnection():
