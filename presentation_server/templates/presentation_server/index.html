@@ -38,8 +38,8 @@
             <div class="col-lg-4">
                 <a href="{% url 'aps:ClientDetails' client.pk %}" class="nothing_on_hover">
                     <div class="panel panel-default">
-                        <div class="panel-heading align_left">
-                            <div class="panel-title">
+                        <div class="panel-heading align_left" {% if client.has_alerts %}style="background-color: #FFCC33" {% endif %}>
+                            <div class="panel-title" >
                                 <div style="display: inline-block; padding-top: 5px; width: 100%">
                                     <span class="accent">{{ client.hostname }}</span>
                                     <span> {{ client.ip_address }}</span>
