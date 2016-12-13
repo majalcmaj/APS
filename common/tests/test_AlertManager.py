@@ -26,13 +26,14 @@ class AlertManagerTestCase(TestCase):
     def test_get_all_clients(self):
         all_clients = ClientManager.get_all_clients()
         self.assertEqual(len(self._clients), len(all_clients),
-                         "There should be {} clients in db, but there were {} of them".format(
+                         "There should be {} clients in db, but there "
+                         "were {} of them".format(
                              len(self._clients), len(all_clients)
                          ))
         for cl in self._clients:
-            self.assertIn(cl, all_clients, "Client with pk {} should exist in database.".format(
-                cl.pk
-            ))
+            self.assertIn(cl,
+                          all_clients,
+                          "Client with pk {} should exist in database.".format(cl.pk))
 
     def test_get_clients(self):
         self.assertEqual(len(ClientManager.get_clients("Test1")), 1,

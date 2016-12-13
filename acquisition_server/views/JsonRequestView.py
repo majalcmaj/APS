@@ -22,7 +22,7 @@ class JsonRequestView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        logger.error("{}: {}".format(request.content_type, request.body))
+        #logger.error("{}: {}".format(request.content_type, request.body))
         if request.content_type == "aps/json":
             try:
                 json_data = json.loads(request.body.decode('utf-8'))

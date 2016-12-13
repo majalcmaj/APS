@@ -25,6 +25,7 @@ def process_data(client, records, timestamp):
     :param timestamp: unix timestamp from client meaning time at which the collected monitoring data on
     client has been sent
     """
+
     _check_thresholds(client, records)
     RRDtoolManager.update_rrd(client, records, timestamp)
     client.last_update = int(timestamp)

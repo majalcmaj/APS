@@ -1,8 +1,12 @@
 import os
 import rrdtool
 import time
+import logging
 
 from APS import settings
+from APS.settings import LOGGER_NAME
+
+logger = logging.getLogger(LOGGER_NAME)
 
 # TODO: Artur komentarze
 def create_rrd(client):
@@ -28,6 +32,7 @@ def create_rrd(client):
     for rrd_archive in rrd_archives:
         command.append(rrd_archive)
 
+    print(command)
     rrdtool.create(command)
 
 
@@ -39,8 +44,10 @@ def update_rrd(client, records, time):
         template_string += ":" + k
         record_string += ":" + str(v)
 
-    rrdtool.update(rrd_database_name, '--template', template_string[1:], record_string)
-
+    try:
+        rrdtool.update(rrd_database_name, '--template', template_string[1:], record_string)
+    except Exception:
+        logger.error("Records could not be writtend to database. Somehow....")
 
 def fetch_data(client, since):
     rrd_database_name = _get_rrd_abs_path(client.pk)

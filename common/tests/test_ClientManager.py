@@ -4,7 +4,7 @@ from common.libs import AlertManager
 from common.models import Client, Alert
 
 
-class AlertManagerTestCase(TestCase):
+class ClientManagerTestCase(TestCase):
     def setUp(self):
         client = Client(
             hostname="Test",
@@ -28,15 +28,20 @@ class AlertManagerTestCase(TestCase):
 
     def test_remove_single(self):
         AlertManager.delete_alert(self._alerts[0])
-        with self.assertRaises(expected_exception=Alert.DoesNotExist, msg="Alert not found exception should be raised"):
+        with self.assertRaises(expected_exception=Alert.DoesNotExist,
+                               msg="Alert not found exception should be raised"):
             Alert.objects.get(pk=self._alerts[0])
 
     def test_remove_not_existing(self):
-        with self.assertRaises(expected_exception=Alert.DoesNotExist, msg="Alert not found exception should be raised"):
+        with self.assertRaises(expected_exception=Alert.DoesNotExist,
+                               msg="Alert not found exception should be raised"):
             Alert.objects.get(pk=-1)
 
     def test_remove_all(self):
-        self.assertGreater(self._client.alerts.count(), 0, "Test error: Alerts count should be greater than 0")
+        self.assertGreater(self._client.alerts.count(), 0,
+                           "Test error: Alerts count should be greater than 0")
         AlertManager.delete_all_for_client(self._client.pk)
-        self.assertEqual(self._client.alerts.count(), 0, "There should be no alerts left for client")
-        self.assertEqual(self._client2.alerts.count(), 1, "Alerts from client other than specified have been deleted too!")
+        self.assertEqual(self._client.alerts.count(), 0,
+                         "There should be no alerts left for client")
+        self.assertEqual(self._client2.alerts.count(), 1,
+                         "Alerts from client other than specified have been deleted too!")
