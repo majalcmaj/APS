@@ -1,38 +1,54 @@
 {% extends "presentation_server/skeletons/base_skeleton.html" %}
-{% block title %}APS - Clients{% endblock %}
+{% block title %}APS - Blocked Clients{% endblock %}
 {% block content %}
+
     <div class="content">
-    <h1>Blocked Clients</h1>
-        <table border="1px solid black">
-            {% for blocked_client in blocked_clients %}
-                <div class="panel panel-default">
-                    <div class="panel-heading align_left">
-                        <div class="panel-title">
-                            <div class="container" style="display: inline-block; padding-top: 5px;">
-                                <span class="accent col-md-2">Hostname</span>
-                                <span class="col-md-5">{{ blocked_client.hostname }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="panel-body container">
-                        <div class="row">
-                            <div class="accent col-md-3">IP address</div>
-                            <div class="col-md-3">{{ blocked_client.ip_address }}</div>
-                            </br>
-                            <p>Monitored properties:
-                                {{ blocked_client.monitored_properties.all|join:", " }}
-                            </p>
-                            <br/>
-                            <form method="post" action="{{ current_url }}">
-                                {% csrf_token %}
-                                <input type="hidden" name="blocked_client_pk" value="{{ blocked_client.pk }}"/>
-                                <button type="submit" class="btn btn-success" name="accept" value="accept">Accept
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
+        <h1>Blocked Clients</h1>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>
+                    Client's hostname
+                </th>
+                <th>
+                    Client's IP
+                </th>
+                <th>
+                    Client's Monitored properties
+                </th>
+                <th>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for client in object_list %}
+                <tr>
+                    <td>
+                        {{ client.hostname }}
+                    </td>
+                    <td>
+                        {{ client.ip_address }}
+                    </td>
+                    <td>
+                        {{ client.monitored_properties.all|join:", " }}
+                    </td>
+                    <td>
+                        <form method="post" action="">
+                            {% csrf_token %}
+                            <input type="hidden" name="client_pk" value="{{ client.pk }}"/>
+                            <button type="submit" class="btn btn-success" name="accept" value="accept">Accept
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4">
+                        No clients yet.
+                    </td>
+                </tr>
             {% endfor %}
+            </tbody>
         </table>
     </div>
 {% endblock %}

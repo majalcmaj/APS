@@ -2,5 +2,5 @@ OK - Konfiguracja thresholds czytelna dla człowieka
 OK - zamaina tła nagłówka w przypadku wystąpienia alertów
 OK - Nazwa klienta w konfiguracji - widoczna
 OK - threshold - usuwanie 'x' zamiast '-'
-- konfiguracja wielu - checkboxy na dashboardzie -> tricky
+OK konfiguracja wielu - checkboxy na dashboardzie -> tricky
 - thresholds - niezaaplikowane, dopóki admin nie zatwierdzi.

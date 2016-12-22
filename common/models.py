@@ -31,6 +31,13 @@ class MonitoredProperty(models.Model):
     monitored = models.BooleanField(default=True)
     client = models.ForeignKey(ClientBase, on_delete=models.CASCADE, related_name="monitored_properties")
 
+    def is_on_dashboard(self):
+        prop_on_dashboard = self.client.property_on_dashboard
+        return prop_on_dashboard.pk == self.pk if prop_on_dashboard is not None else False
+
+    class Meta:
+        ordering=['name']
+
     def __str__(self):
         return "{} [{}]".format(str(self.name), str(self.type))
 

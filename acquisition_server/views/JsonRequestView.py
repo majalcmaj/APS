@@ -67,8 +67,11 @@ class JsonRequestView(View):
 
     def _return_client_configuration(self, client):
         configuration = ClientsConfigurator.form_configuration_data_for_client(client)
-        ClientsConfigurator.ack_configuration_applied(client)
-        return JsonResponse({"result": "success", "configuration": configuration})
+        if configuration != {}:
+            ClientsConfigurator.ack_configuration_applied(client)
+            return JsonResponse({"result": "success", "configuration": configuration})
+        else:
+            return JsonResponse({"configuration": None})
 
     def _register_client(self, json_data, request):
         try:

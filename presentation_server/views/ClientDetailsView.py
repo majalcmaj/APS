@@ -19,6 +19,10 @@ class ClientDetailsView(View):
         client_data, _ = MonitoringDataManager.get_client_data(client, int(time.time()) - client.monitoring_timespan)
         monitoring_data = json.dumps(client_data) \
             if client.is_configured and client_data is not None else []
-        context = {"client": client, "monitoring_data": monitoring_data,
-                   "update_ratio_seconds": 5, "alerts": AlertManager.get_client_alerts(client)}
+        context = {
+            "client": client,
+            "monitoring_data": monitoring_data,
+            "update_ratio_seconds": 5,
+            "alerts": AlertManager.get_client_alerts(client)
+        }
         return render(request, 'presentation_server/ClientDetailView.html', context)

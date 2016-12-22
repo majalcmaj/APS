@@ -46,8 +46,8 @@ def update_rrd(client, records, time):
 
     try:
         rrdtool.update(rrd_database_name, '--template', template_string[1:], record_string)
-    except Exception:
-        logger.error("Records could not be writtend to database. Somehow....")
+    except Exception as e:
+        logger.exception("Records could not be writtend into database.")
 
 def fetch_data(client, since):
     rrd_database_name = _get_rrd_abs_path(client.pk)

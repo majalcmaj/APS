@@ -37,7 +37,7 @@
         {% for client in clients %}
             <div class="col-lg-4">
                 <a href="{% url 'aps:ClientDetails' client.pk %}" class="nothing_on_hover">
-                    <div class="panel panel-default">
+                    <div class="panel panel-default" style="min-height: 300px">
                         <div class="panel-heading align_left" {% if client.has_alerts %}style="background-color: #FFCC33" {% endif %}>
                             <div class="panel-title" >
                                 <div style="display: inline-block; padding-top: 5px; width: 100%">
@@ -84,6 +84,8 @@
                     </div>
                 </a>
             </div>
+            {% empty %}
+            <h2>No clients are monitored yet.</h2>
         {% endfor %}
     </div>
     <script type="text/javascript">

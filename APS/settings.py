@@ -20,6 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '6ekw4aiuqp=ke*mb&so1yrb1l96@@*_@p4i-r+4%($2u*oja(7'
+DIGITAL_SIGNATURE_SECRET = b"894d37da41fb91344a4d1e87412986ad1db183a677a20be2076a7623c24a32a7"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -32,7 +33,6 @@ INSTALLED_APPS = [
     'acquisition_server.apps.AcquisitionServerConfig',
     'common.apps.CommonConfig',
     'presentation_server.apps.PresentationServerConfig',
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -139,7 +139,7 @@ EMAIL_SERVER_PORT = 587
 EMAIL_NOTIFICATION_LOGIN = "alert.server.monitor@gmail.com"
 EMAIL_NOTIFICATION_PASSWORD = "Kupka1234"
 NOTIFIED_EMAILS = [
-    "artur.zimnicki1@gmail.com"
+    "majalcmaj@gmail.com",
 ]
 
 # Logging settings
@@ -162,3 +162,5 @@ LOGGING = {
 }
 
 LOGIN_REDIRECT_URL = "aps:index"
+
+MESSAGE_DATA_DELIMITER = b"<<DATA>>"

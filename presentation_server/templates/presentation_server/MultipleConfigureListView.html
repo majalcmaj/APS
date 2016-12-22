@@ -1,0 +1,73 @@
+{% extends "presentation_server/skeletons/base_skeleton.html" %}
+{% block title %}APS - Multiple Client Configuration{% endblock %}
+{% block content %}
+    <div class="content">
+        <form method="get" action="">
+            {% csrf_token %}
+            <h1>Multiple Client Configuration</h1>
+            <button id="ConfigureSelectedButton"
+                    class="btn btn-success" type="submit"
+                    formaction="{% url "aps:MultipleConfigure"%}"
+                    formmethod="post"
+                    name="begin_configuration"
+            >Configure Selected</button>
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>
+                        Client's hostname
+                    </th>
+                    <th>
+                        Client's IP
+                    </th>
+                    <th>
+                        Client's Monitored properties
+                    </th>
+                    <th>
+                        Configure
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for client in object_list %}
+                    <tr>
+                        <td>
+                            {{ client.hostname }}
+                        </td>
+                        <td>
+                            {{ client.ip_address }}
+                        </td>
+                        <td>
+                            {{ client.monitored_properties.all|join:", " }}
+                        </td>
+                        <td>
+                            <input title="Add client to configured set!" type="checkbox"
+                            name="pks_to_configure[]" value="{{ client.pk }}"
+                                   onchange="checkbox_manipulation(this)"
+                            {% if client.pk == chosen_pk %}checked{% endif %}>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4">
+                            No clients yet.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        <script type="text/javascript">
+            function checkbox_manipulation(checkbox) {
+                var selected_count = document.querySelectorAll(
+                        'input[name="pks_to_configure[]"]:checked').length;
+                if(checkbox.checked && selected_count==1 ||
+                        !checkbox.checked && selected_count==0) {
+                    //alert("Aktualnie " + selected_count + "Zaznaczone!");
+                    checkbox.form.submit()
+                }
+
+            }
+        </script>
+        </form>
+    </div>
+{% endblock %}
