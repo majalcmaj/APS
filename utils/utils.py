@@ -1,19 +1,24 @@
+import hashlib
+import hmac
+import json
 import os, pwd, grp
 from logging.handlers import RotatingFileHandler
-from configuration.constant_values import LOGGING_TEMP_FILE
+from configuration.constant_values import LOGGING_TEMP_FILE, DIGITAL_SIGNATURE_SECRET
+
 
 def read_from_pipe(pipe):
-    message = b''
+    message = bytearray()
     while True:
         data = os.read(pipe, 1)
         if data == b'\0':
-            return message.decode('utf-8')
+            return json.loads(str(message).decode("UTF-8"))
         else:
-            message += data
+            message.append(data)
 
 
 def write_to_pipe(pipe, data):
-    os.write(pipe, (data + "\0").encode('utf-8'))
+    data = json.dumps(data) + b'\0'
+    os.write(pipe, data.encode("UTF-8"))
 
 
 def drop_privileges(uid_name, gid_name):
@@ -54,3 +59,25 @@ class MyRotatingHandler(RotatingFileHandler):
             os.rename(self.baseFilename, destiny_filename)
 
         self.stream = self._open()
+
+
+class Singleton(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class CryptUtils:
+    @staticmethod
+    def create_signature(data):
+        return hmac.new(DIGITAL_SIGNATURE_SECRET, data, hashlib.sha256).digest()
+
+    @staticmethod
+    def validate_signature(data, signature):
+        return hmac.compare_digest(
+            CryptUtils.create_signature(data),
+            signature
+        )

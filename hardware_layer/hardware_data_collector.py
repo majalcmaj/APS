@@ -2,7 +2,7 @@ import json
 
 from hardware_layer import hardware_functions
 from hardware_layer.lumel_connection import LumelConnection
-from utils import utils_functions
+from utils import utils
 
 
 class HardwareDataCollector:
@@ -16,15 +16,15 @@ class HardwareDataCollector:
 
         while True:
             try:
-                input_data = utils_functions.read_from_pipe(command_pipe)
-                functions = HardwareDataCollector.map_parameters_onto_functions(input_data.split(" "))
+                input_data = utils.read_from_pipe(command_pipe)
+                functions = HardwareDataCollector.map_parameters_onto_functions(input_data)
                 result = {}
                 for function in functions:
-                    if function[0].find("lumel") != -1 and lumel_monitoring:
+                    if lumel_monitoring and function[0].find("lumel") != -1:
                         result[function[0]] = function[1](lumel_connection)
                     else:
                         result[function[0]] = function[1]()
-                utils_functions.write_to_pipe(result_pipe, json.dumps(result))
+                utils.write_to_pipe(result_pipe, result)
             except KeyboardInterrupt:
                 if lumel_monitoring:
                     lumel_connection.close_connection()

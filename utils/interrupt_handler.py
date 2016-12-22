@@ -19,7 +19,7 @@ class InterruptHandler:
             self.tcp_server.shutdown()
 
         #saving log files
-        logging.getLogger("aps").handlers[0].close()
+        #logging.getLogger("aps").handlers[0].close()
         if os.path.exists(LOGGING_BASE_FILE):
             log = open(LOGGING_BASE_FILE, 'a')
             if os.path.exists(LOGGING_TEMP_FILE):

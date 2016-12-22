@@ -1,6 +1,6 @@
 {
-  "BASE_USERNAME":"artur",
-  "BASE_USER_GROUP":"artur",
+  "BASE_USERNAME":"mc",
+  "BASE_USER_GROUP":"mc",
 
   "SERVER_IP": "127.0.0.1",
   "SERVER_PORT": "13000",
