@@ -11,6 +11,7 @@ from common.libs.ClientsStateManager import ClientsManagerException
 
 logger = logging.getLogger(LOGGER_NAME)
 
+
 @csrf_exempt
 def monitoring_data(request):
     if request.method == "PUT":
@@ -32,17 +33,18 @@ def monitoring_data(request):
                         logger.error("Client with key {} does not exist in database. Address: {}".format(
                             json_data['key'],
                             request.META['REMOTE_ADDR']))
-                        return signed_json_response(status=404, data={"result": "Client is not registered in database."})
+                        return signed_json_response(status=404,
+                                                    data={"result": "Client is not registered in database."})
                 else:
                     logger.error("Digital signature verification failed.")
                     return signed_json_response(status=401, data={"content": "Digital signature verification failed."})
             except Exception:
                 logger.exception("Exception ocurred during sending monitoring data.")
                 return signed_json_response(status=400,
-                                    data={"content": "Bad request format. Contact administrator for details"})
+                                            data={"content": "Bad request format. Contact administrator for details"})
         else:
             return signed_json_response(status=415, data={"content": "Data sent has be of type 'aps/json' and "
-                                                             "has to be digitally signed"})
+                                                                     "has to be digitally signed"})
     else:
         return signed_json_response(status=405, data={"content": "Methods allowed: PUT"})
 
@@ -67,7 +69,8 @@ def client_configuration(request):
                         logger.error("Client with key {} does not exist in database. Address: {}".format(
                             json_data['key'],
                             request.META['REMOTE_ADDR']))
-                        return signed_json_response(status=404, data={"result": "Client is not registered in database."})
+                        return signed_json_response(status=404,
+                                                    data={"result": "Client is not registered in database."})
                 else:
                     logger.error("Digital signature verification failed.")
                     return signed_json_response(status=401, data={"content": "Digital signature verification failed."})
@@ -75,7 +78,7 @@ def client_configuration(request):
             except Exception:
                 logger.exception("Exception ocurred during client configuration request.")
                 return signed_json_response(status=400,
-                                    data={"content": "Bad request format. Contact administrator for details"})
+                                            data={"content": "Bad request format. Contact administrator for details"})
         else:
             return signed_json_response(status=415, data={"content": "Data sent must be of type 'aps/json'"})
     else:
@@ -102,7 +105,7 @@ def client_identity(request):
             except Exception:
                 logger.exception("Exception ocurred during checking client id.")
                 return signed_json_response(status=400,
-                                    data={"content": "Bad request format. Contact administrator for details"})
+                                            data={"content": "Bad request format. Contact administrator for details"})
         else:
             return signed_json_response(status=415, data={"content": "Data sent must be of type 'aps/json'"})
     elif request.method == "POST":
@@ -126,7 +129,7 @@ def client_identity(request):
             except Exception as e:
                 logger.exception("Exception occured during client registration request.")
                 return signed_json_response(status=400,
-                                    data={"content": "Bad request format. Contact administrator for details"})
+                                            data={"content": "Bad request format. Contact administrator for details"})
         else:
             return signed_json_response(status=415, data={"content": "Data sent must be of type 'aps/json'"})
     else:
