@@ -60,7 +60,7 @@ def client_configuration(request):
                     client = ClientManager.get_client_anystate(
                         utils.extract_client_key(json_data))
                     if client is not None:
-                        if client.configuration_pending or client.is_configured:
+                        if client.is_configured:
                             configuration = utils.return_client_configuration(client)
                             return signed_json_response(status=200, data=configuration)
                         else:
