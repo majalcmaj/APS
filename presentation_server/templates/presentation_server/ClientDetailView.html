@@ -16,7 +16,8 @@
 {% endblock %}
 {% block content %}
     <div class="content">
-        <h1>Client Details</h1>
+        <h1>Client Details - <span class="accent">{{ client.hostname }} </span>
+            {{ client.ip_address }}</h1>
         <div class="content_unit">
             <ul class="nav nav-tabs" role="tablist">
                 <li role="presentation" class="active"><a href="#charts" aria-controls="charts"
@@ -30,15 +31,6 @@
 
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="charts">
-                    <div class="row">
-                        <div class="fll col-lg-6">
-                            <span class="accent">{{ client.hostname }} </span>
-                            {{ client.ip_address }}:{{ client.port }}
-                        </div>
-                        <div class="fll col-lg-6">
-                            <span class="accent">Probing interval: </span>
-                            {{ client.probing_interval }}</div>
-                    </div>
                     <div id="client_charts"></div>
                     <script type="text/javascript">
                         $(document).ready(function () {
@@ -72,7 +64,6 @@
                             <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Timestamp</th>
                                 <th>Alert message</th>
                             </tr>
                             </thead>
@@ -83,9 +74,6 @@
                                     <th>
                                         {{ forloop.counter }}
                                     </th>
-                                    <td>
-                                        {{ alert.created }}
-                                    </td>
                                     <td>
                                         {{ alert.message }}
                                     </td>

@@ -1,6 +1,1 @@
-- Konfiguracja thresholds czytelna dla człowieka
-- zamaina tła nagłówka w przypadku wystąpienia alertów
-- Nazwa klienta w konfiguracji - widoczna
-- threshold - usuwanie 'x' zamiast '0'
-- konfiguracja wielu - checkboxy na dashboardzie -> tricky
-- thresholds - niezaaplikowane, dopóki admin nie zatwierdzi.
+1. Dodać do instrukcji potrzebę uruchomienia serwera smtp na maszynie.

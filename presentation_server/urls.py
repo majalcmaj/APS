@@ -5,7 +5,9 @@ from presentation_server.views.AlertsCleaner import AlertsCleaner
 from presentation_server.views.BlockedClientsView import BlockedClientsView
 from presentation_server.views.ClientConfigurationView import ClientConfigurationView
 from presentation_server.views.ClientDetailsView import ClientDetailsView
+from presentation_server.views.MultipleConfigureView import MultipleConfigureView
 from presentation_server.views.IndexView import IndexView
+from presentation_server.views.MultipleConfigureListView import MultipleConfigureListView
 from presentation_server.views.PendingClientsView import PendingClientsView
 from presentation_server.views.ThresholdConfigurationView import ThresholdConfigurationView
 from presentation_server.views.UpdateCharts import UpdateCharts
@@ -37,5 +39,9 @@ urlpatterns = [
         ThresholdConfigurationView.as_view(), name='ThresholdConfiguration'),
     url(r'^AlertsCleaner/(?P<client_pk>[0-9]+)$',
         AlertsCleaner.as_view(), name='AlertsCleaner'),
+    url(r'^MultipleConfigureList',
+        MultipleConfigureListView.as_view(), name='MultipleConfigureList'),
+    url(r'^MultipleConfigure',
+        MultipleConfigureView.as_view(), name='MultipleConfigure'),
 
 ]

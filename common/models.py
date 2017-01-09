@@ -19,10 +19,6 @@ class ClientBase(models.Model):
     consecutive_probes_sent_count = models.IntegerField(default=1)
     base_probing_interval = models.IntegerField(default=1)
 
-    @property
-    def rrd_database_location(self):
-        return settings.RRD_DATABASE_DIRECTORY + "/aps_{}.rrd".format(self.hostname)
-
     def __str__(self):
         return "Host: {} IP:{} Probing_interval:{} Monitored Properties: [{}]" \
             .format(self.hostname, self.ip_address, self.consecutive_probes_sent_count,
@@ -34,6 +30,13 @@ class MonitoredProperty(models.Model):
     type = models.CharField(max_length=20, null=False)
     monitored = models.BooleanField(default=True)
     client = models.ForeignKey(ClientBase, on_delete=models.CASCADE, related_name="monitored_properties")
+
+    def is_on_dashboard(self):
+        prop_on_dashboard = self.client.property_on_dashboard
+        return prop_on_dashboard.pk == self.pk if prop_on_dashboard is not None else False
+
+    class Meta:
+        ordering=['name']
 
     def __str__(self):
         return "{} [{}]".format(str(self.name), str(self.type))
@@ -52,7 +55,7 @@ class Threshold(models.Model):
     is_gt = models.BooleanField(default=True)
 
     def type_as_string(self):
-        return "Warning" if self.type == 0 else "e-mail notification"
+        return "create warning" if self.type == 0 else "send e-mail notification"
 
     def is_value_abnormal(self, value):
         value = float(value)
@@ -61,6 +64,8 @@ class Threshold(models.Model):
         else:
             return value < self.value
 
+    def is_gt_as_string(self):
+        return ">" if self.is_gt else "<"
 
 
 class Alert(models.Model):
