@@ -1,29 +1,24 @@
+import logging
 import time
 
+from acquisition_layer import ServerCommunicator
+from configuration import settings
+from configuration_managers.client_conifguration_manager import ClientConfigurationManager
 from utils import utils
-import requests
-import json
-import logging
 
 LOGGER = logging.getLogger("aps")
 
 
 class DataSender:
-    def __init__(self, command_pipe, result_pipe, configuration_manager, server_communicator):
+    def __init__(self, key, command_pipe, result_pipe):
+        self._key = key
         self.command_pipe = command_pipe
         self.result_pipe = result_pipe
 
-        self._key = None
-        self._conf_mgr = configuration_manager
-        self._server_communicator = server_communicator
-
-    def set_key(self, key):
-        self._key = key
+        self._conf_mgr = ClientConfigurationManager()
 
     def start_sending_data(self):
         parameters = self._conf_mgr['monitoring_parameters']
-        base_probing_interval = int(self._conf_mgr["BASE_PROBING_INTERVAL"])
-
         counter = int(self._conf_mgr['probing_interval'])
         aggregator = {}
         for p in parameters:
@@ -38,20 +33,21 @@ class DataSender:
                     for k, v in aggregator.items():
                         aggregator[k] = round(v / divider, 2)
 
-                    LOGGER.info("Connected to server")
                     # sending data
-                    payload = {"message": "monitoring_data",
-                               "monitored_properties": aggregator,
+                    payload = {"monitored_properties": aggregator,
                                "key": str(self._key),
                                "timestamp": int(time.time())
                                }
-                    result = self._server_communicator.send_monitoring_data(
+                    result = ServerCommunicator.send_monitoring_data(
                         payload
                     )
-                    if result != "ok":
-                        if result == "conf_changed":
-                            parameters = self._conf_mgr['monitoring_parameters']
-                            aggregator = {}
+                    if result == "ok":
+                        LOGGER.info("Sent: " + str(aggregator))
+                    elif result == "conf_changed":
+                        self._conf_mgr.get_client_configuration_from_server()
+                        parameters = self._conf_mgr['monitoring_parameters']
+                        aggregator = {}
+
                     for key in parameters:
                         aggregator[key] = 0
                     counter = int(self._conf_mgr['probing_interval'])
@@ -63,11 +59,9 @@ class DataSender:
                     for k, v in status_data.items():
                         aggregator[k] += float(v)
 
-                    LOGGER.info(status_data)
-
                     counter -= 1
                     time_difference = time.time() - start_time
-                    if base_probing_interval - time_difference > 0:
-                        time.sleep(base_probing_interval - time_difference)
+                    if settings.BASE_PROBING_INTERVAL - time_difference > 0:
+                        time.sleep(settings.BASE_PROBING_INTERVAL - time_difference)
             except Exception:
                 LOGGER.exception("An exception has ocurred during data sending")

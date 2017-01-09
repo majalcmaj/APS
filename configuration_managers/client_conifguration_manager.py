@@ -1,57 +1,51 @@
-import json
-
-from acquisition_layer.server_communicator import ServerCommunicator
-from configuration import constant_values
-from configuration_managers.client_key_handler import ClientKeyHandler
-from utils import utils
 import logging
+import os
 
-LOGGER = logging.getLogger("aps")
+from acquisition_layer import ServerCommunicator
+from configuration import settings
+from utils import utils
+
+LOGGER = logging.getLogger(settings.LOGGER_NAME)
 
 
 class ClientConfigurationManager:
     __metaclass__ = utils.Singleton
 
     def __init__(self):
-        self._base_configuration = self._load_initial_configuration()
-        self._last_configuration = self._load_last_configuration()
-        self.__server_communicator = None
+        self._last_configuration = None
+        self._key = None
+        try:
+            if os.path.isfile(settings.CLIENT_KEY_FILE):
+                with open(settings.CLIENT_KEY_FILE, 'r') as f:
+                    key = int(f.readline())
+                    if ServerCommunicator.validate_client_identity(key):
+                        self._key = key
+
+        except Exception:
+            LOGGER.exception("An exception ocurred during acquisition of client's key.")
+
+        if self._key is None:
+            LOGGER.info("Attempting to register on a server...")
+            self._key = ServerCommunicator.register_client()
+            assert self._key is not None, "Fatal error: key cannot be none!"
+            self._save_client_key()
+
+        self.get_client_configuration_from_server()
+
+    @property
+    def key(self):
+        return self._key
 
     def get_client_configuration_from_server(self):
-        key = ClientKeyHandler.get_assigned_client_key()
-        self._last_configuration = self._server_communicator.get_client_configuration(key)
-        self._save_current_configuration()
-        return self._last_configuration != {}
+        LOGGER.info("Acquiring configuration from server.")
+        self._last_configuration = ServerCommunicator.get_client_configuration(self._key)
 
     def __getitem__(self, item):
-        try:
-            return self._last_configuration[item]
-        except KeyError:
-            return self._base_configuration[item]
+        return self._last_configuration[item]
 
     def is_configured_by_server(self):
         return self._last_configuration != {}
 
-    @property
-    def _server_communicator(self):
-        if self.__server_communicator is None:
-            self.__server_communicator = ServerCommunicator(
-                self
-            )
-        return self.__server_communicator
-
-    def _save_current_configuration(self):
-        with open(constant_values.LAST_CONFIG_PATH, 'w') as file:
-            json.dump(self._last_configuration, file)
-
-    def _load_initial_configuration(self):
-        with open(constant_values.BASE_CONFIG_PATH) as configuration_file:
-            return json.load(configuration_file)
-
-    def _load_last_configuration(self):
-        try:
-            with open(constant_values.LAST_CONFIG_PATH) as configuration_file:
-                return json.load(configuration_file)
-        except IOError:
-            LOGGER.info("No server configuration file detected")
-            return {}
+    def _save_client_key(self):
+        with open(settings.CLIENT_KEY_FILE, 'w') as file:
+            file.write(str(self._key))

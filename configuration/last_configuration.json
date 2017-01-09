@@ -1,1 +1,0 @@
-{"monitoring_parameters": ["cpu_usage", "free_disk_space", "ram_usage"], "probing_interval": 1}

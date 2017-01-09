@@ -1,9 +1,13 @@
 import hashlib
 import hmac
 import json
+import logging
 import os, pwd, grp
+import socket
 from logging.handlers import RotatingFileHandler
-from configuration.constant_values import LOGGING_TEMP_FILE, DIGITAL_SIGNATURE_SECRET
+
+from configuration import settings
+from configuration.settings import LOGGING_TEMP_FILE, DIGITAL_SIGNATURE_SECRET
 
 
 def read_from_pipe(pipe):
@@ -40,6 +44,10 @@ def yes_no_prompt(question):
         return True
     else:
         return False
+
+
+def get_hostname():
+    return socket.gethostname()
 
 
 class MyRotatingHandler(RotatingFileHandler):
@@ -81,3 +89,13 @@ class CryptUtils:
             CryptUtils.create_signature(data),
             signature
         )
+
+
+def setup_logger():
+    logger = logging.getLogger(settings.LOGGER_NAME)
+    logger.setLevel(settings.LOGGING_LEVEL)
+    handler = logging.StreamHandler()  # MyRotatingHandler(constant_values.LOGGING_BASE_FILE, maxBytes=10 * 1024 * 1024)
+    formatter = logging.Formatter(settings.LOG_FORMAT)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    return logger
