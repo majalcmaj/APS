@@ -1,18 +1,19 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http.response import HttpResponseRedirect, Http404
 from django.shortcuts import render
+from django.urls.base import reverse
 from django.views import View
+from django.views.generic.list import ListView
 
 from common.libs import ClientsStateManager, ClientManager
 
 
-class PendingClientsView(LoginRequiredMixin, View):
+class PendingClientsView(LoginRequiredMixin, ListView):
     login_url = '/aps/login/'
+    template_name = "presentation_server/PendingClientsView.html"
 
-    def get(self, request, *args, **kwargs):
-        pending_clients = ClientManager.get_all_pending()
-        context = {"current_url": request.get_full_path(), "pending_clients": pending_clients}
-        return render(request, 'presentation_server/PendingClientsView.html', context)
+    def get_queryset(self):
+        return ClientManager.get_all_pending()
 
     def post(self, request, *args, **kwargs):
         try:
@@ -23,7 +24,8 @@ class PendingClientsView(LoginRequiredMixin, View):
 
             if request.POST.get('accept'):
                 ClientsStateManager.accept_pending_client(pk)
-                return HttpResponseRedirect("/aps/ClientConfiguration/{}".format(pk))
+                return HttpResponseRedirect(
+                    reverse("aps:ClientConfiguration", kwargs={"client_pk": pk}))
 
             return HttpResponseRedirect(request.get_full_path())
         except Exception:

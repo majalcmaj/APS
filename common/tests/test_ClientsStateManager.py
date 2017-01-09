@@ -4,7 +4,7 @@ from common.libs import ClientsConfigurator, ClientsStateManager
 from common.models import Client, ClientBase, MonitoredProperty, PendingClient
 
 
-class ClientsStateManager(TestCase):
+class ClientsStateManagerTest(TestCase):
 
     def test_register_new_pending_client(self):
         hostname = "Test"

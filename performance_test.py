@@ -6,7 +6,7 @@ from multiprocessing import Pool
 import requests
 import time
 
-WORKERS_COUNT = 15
+WORKERS_COUNT = 3
 WAIT_BETWEEN_TIME = 4
 threads_alive = 0
 errors = 0
@@ -24,13 +24,13 @@ class MockClient:
         self._key = ClientsStateManager.register_new_pending_client(
             "CLIENT",
             "127.0.0.1",
-            {"counter": "int"}, WAIT_BETWEEN_TIME)
+            {"lumel_time": "T"}, WAIT_BETWEEN_TIME)
 
         ClientsStateManager.accept_pending_client(self._key)
         db_cl = Client.objects.get(pk=self._key)
         db_cl.hostname += str(self._key)
         db_cl.is_configured = True
-        db_cl.property_on_dashboard = db_cl.monitored_properties.get(name="counter")
+        db_cl.property_on_dashboard = db_cl.monitored_properties.get(name="lumel_time")
         db_cl.monitoring_timespan = 60
         db_cl.save()
         RRDtoolManager.create_rrd(db_cl)
@@ -48,7 +48,7 @@ class MockClient:
         return url, headers, payload
 
     def send_data(self):
-        aggregator = {"counter": self._counter}
+        aggregator = {"lumel_time": self._counter}
         self._counter = self._counter + 1 if self._counter < 100 else 0
         url, headers, payload = self.form_request(aggregator)
         try:
@@ -80,20 +80,20 @@ class InterruptHandler:
 
 
 if __name__ == "__main__":
-    try:
-        os.remove('db.sqlite3')
-        shutil.rmtree("common/migrations")
-    except Exception:
-        pass
-    os.system("python3 manage.py makemigrations common")
-    os.system("python3 manage.py migrate")
+    # try:
+    #     os.remove('db.sqlite3')
+    #     shutil.rmtree("common/migrations")
+    # except Exception:
+    #     pass
+    # os.system("python3 manage.py makemigrations common")
+    # os.system("python3 manage.py migrate")
     os.environ["DJANGO_SETTINGS_MODULE"] = "APS.settings"
     django.setup()
     from django.contrib.auth.models import User
 
-    u = User(username="admin")
-    u.set_password("admin")
-    u.save()
+    # u = User(username="admin")
+    # u.set_password("admin")
+    # u.save()
 
     pool = Pool(WORKERS_COUNT)
     interrupt_handler = InterruptHandler(Pool)

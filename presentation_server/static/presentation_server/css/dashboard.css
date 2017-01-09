@@ -177,3 +177,8 @@ body {
 .content {
     padding: 30px 100px 30px 100px;
 }
+
+.ct-axis-title {
+    font-size: small;
+    fill:#776688;
+}

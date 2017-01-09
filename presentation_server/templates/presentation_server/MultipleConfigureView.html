@@ -1,0 +1,258 @@
+{% extends "presentation_server/skeletons/base_skeleton.html" %}
+{% load static %}
+{% block title %}APS - Multiple Client Configuration{% endblock %}
+{% block head %}
+    <script type="text/javascript"
+            src="{% static "presentation_server/js/jquery-3.1.1.min.js" %}"></script>{% endblock %}
+{% block content %}
+    <div class="content">
+        <h1 xmlns="http://www.w3.org/1999/html">Client configuration</h1>
+        <div class="content_unit">
+            <h2 style="color: red;">{{ error_message }}</h2>
+
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#basic_configuration"
+                                                          aria-controls="basic_configuration"
+                                                          role="tab" data-toggle="tab">Basic Configuration</a>
+                </li>
+                <li role="presentation"><a href="#threshold_configuration" aria-controls="threshold_configuration"
+                                           role="tab"
+                                           data-toggle="tab">Thresholds</a>
+                </li>
+            </ul>
+
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="basic_configuration">
+                    <form id="conf_form" method="post" action="">
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+                        <table class="table">
+                            <tbody>
+                            <tr>
+                                <td colspan="2">
+                                    <strong>Clients configured:</strong>
+                                    <ul class="list-group">
+                                        {% for client in clients_to_configure %}
+                                            <li class="list-group-item">{{ client.hostname }} ({{ client.ip_address }})
+                                                <input type="hidden" name="pks_to_configure[]" value="{{ client.pk }}"/>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label for="{{ form.consecutive_probes_sent_count.id_for_label }}">{{ form.consecutive_probes_sent_count.label }}</label>
+                                </td>
+                                <td>
+                                    {{ form.consecutive_probes_sent_count }} <span
+                                        class="error">{{ form.consecutive_probes_sent_count.errors }}</span>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <div><label>Database memory length</label></div>
+                                </td>
+                                <td>
+                                    <div>
+                                    <span><label
+                                            for="{{ form.monitoring_days.id_for_label }}">{{ form.monitoring_days.label }}</label>{{ form.monitoring_days }}</span>
+                                        <span><label
+                                                for="{{ form.monitoring_hours.id_for_label }}">{{ form.monitoring_hours.label }}</label>{{ form.monitoring_hours }}</span>
+                                        <span><label
+                                                for="{{ form.monitoring_minutes.id_for_label }}">{{ form.monitoring_minutes.label }}</label>{{ form.monitoring_minutes }}</span>
+                                        <span><label
+                                                for="{{ form.monitoring_seconds.id_for_label }}">{{ form.monitoring_seconds.label }}</label>{{ form.monitoring_seconds }}</span>
+                                    </div>
+                                </td>
+                            </tr>
+
+
+                            <tr>
+                                <td><label>Monitored properties:</label></td>
+                                <td>
+                                    <table class="table">
+                                        <tr>
+                                            <th>
+                                                Is monitored
+                                            </th>
+                                            <th>
+                                                Show on dashboard
+                                            </th>
+                                            <th>
+                                                Property name [unit]
+                                            </th>
+                                        </tr>
+                                        {% for monitored_property in monitored_properties %}
+                                            <tr>
+                                                <td>
+                                                    <input type="checkbox" name="monitored_properties[]"
+                                                           title="Monitor this property"
+                                                           class="checkbox"
+                                                           value="{{ monitored_property.pk }}" {{ monitored_property.monitored|yesno:'checked,' }}
+                                                           id="checkbox{{ monitored_property.pk }}"/>
+                                                </td>
+                                                <td>
+                                                    <input type="radio" id="radio{{ monitored_property.pk }}"
+                                                           title="Show this property on dashboard."
+                                                           name="show_on_dashboard[]"
+                                                           value="{{ monitored_property.pk }}" class="radio"
+                                                           onclick="on_radio_checked('checkbox{{ monitored_property.pk }}')"
+                                                            {{ monitored_property.is_on_dashboard|yesno:'checked,' }}
+                                                    />
+                                                </td>
+                                                <td>{{ monitored_property }}</td>
+
+                                            </tr>
+                                        {% endfor %}
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <button type="submit" class="btn btn-success" name="apply_configuration"
+                                            value="configure">
+                                        Apply
+                                        Configuration
+                                    </button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </form>
+                    <script type="text/javascript">
+                        function on_radio_checked(checkbox_id) {
+                            var checkbox = document.getElementById(checkbox_id);
+                            checkbox.checked = true;
+                        }
+                    </script>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="threshold_configuration">
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr class="bg-success">
+                            <th>
+                                Monitored Property
+                            </th>
+                            <th>
+                                Description
+                            </th>
+                            <th>
+                            </th>
+                            <th>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for monitored_property in monitored_properties %}
+                            {% if monitored_property.checked %}
+                                <tr class="active">
+                                    <th colspan="4" class="col-md-3">
+                                        {{ monitored_property.name }} [{{ monitored_property.type }}]
+                                        <button type="button" class="btn btn-primary pull-right" data-toggle="modal"
+                                                data-target="#triggerAddModal" data-mp_pk="{{ monitored_property.pk }}">
+                                            Add Threshold
+                                        </button>
+                                    </th>
+                                </tr>
+                                {% for threshold in monitored_property.thresholds %}
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <strong>IF EVALUE OF EACH
+                                                OF</strong> {{ threshold.max_cons_abnormal_probes }}
+                                            <strong> CONSECUTIVE PROBES</strong>
+                                            {{ threshold.is_gt_as_string }} {{ threshold.value }}
+                                            <strong> THEN </strong>
+                                            {{ threshold.type_as_string }}
+                                            <strong>WITH MESSAGE TEMPLATE</strong> "{{ threshold.message_template }}"
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-xs float-left"
+                                                    value="edit_threshold" name="edit_threshold">
+                                                <span class="glyphicon glyphicon-wrench"></span>
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <form class="inline_form" method="post"
+                                                  action="{% url "aps:ThresholdConfiguration" %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" value="{{ threshold.pk }}"
+                                                       name="threshold_pk"/>
+                                                <input type="hidden" value="{{ client_pk }}"
+                                                       name="client_pk"/>
+                                                <button type="submit" class="btn btn-xs float-right"
+                                                        value="delete_threshold" name="delete_threshold">
+                                                    <span class="glyphicon glyphicon-remove"></span>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="modal fade" id="triggerAddModal" tabindex="-1" role="dialog"
+                         aria-labelledby="triggerAddModal">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <form method="post" action="{% url "aps:ThresholdConfiguration" %}">
+                                    {% csrf_token %}
+                                    <div class="modal-body">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                                aria-label="Close"><span
+                                                aria-hidden="true">&times;</span></button>
+                                        <input type="hidden" id="mp_pk" name="mp_pk" title="MP-PK"/>
+                                        <div class="form-group">
+                                            <table class="table">
+                                                {{ threshold_form.as_table }}
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close
+                                        </button>
+                                        <button type="submit" class="btn btn-success"
+                                                name="add_threshold"
+                                                value="add_threshold">
+                                            Add threshold
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script type="text/javascript">
+                        $(document).ready(function () {
+                            $('#triggerAddModal').on('show.bs.modal', function (event) {
+                                var button = $(event.relatedTarget);
+                                var mp_pk = button.data('mp_pk');
+                                var modal = $(this);
+                                console.error(mp_pk);
+                                modal.find('#mp_pk').val(mp_pk);
+                            })
+                        });
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(function () {
+            // Javascript to enable link to tab
+            var hash = document.location.hash;
+            if (hash) {
+                $('.nav-tabs a[href=\'' + hash + '\']').tab('show');
+            }
+
+            // Change hash for page-reload
+            $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
+                window.location.hash = e.target.hash;
+            });
+        });
+    </script>
+{% endblock %}

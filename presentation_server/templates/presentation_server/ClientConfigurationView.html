@@ -150,50 +150,49 @@
                         <thead>
                         <tr class="bg-success">
                             <th>
-                                Property
+                                Monitored Property
                             </th>
                             <th>
-                                Threshold value
+                                Description
                             </th>
                             <th>
-                                Cycles above<br/>threshold value
                             </th>
                             <th>
-                                Type
                             </th>
-                            <th></th>
                         </tr>
                         </thead>
                         <tbody>
                         {% for monitored_property in monitored_properties %}
                             {% if monitored_property.checked %}
                                 <tr class="active">
-                                    <th class="col-md-3">
+                                    <th colspan="4" class="col-md-3">
                                         {{ monitored_property.name }} [{{ monitored_property.type }}]
                                         <button type="button" class="btn btn-primary pull-right" data-toggle="modal"
                                                 data-target="#triggerAddModal" data-mp_pk="{{ monitored_property.pk }}">
                                             Add Threshold
                                         </button>
                                     </th>
-                                    <th></th>
-                                    <th></th>
-                                    <th></th>
-                                    <th></th>
                                 </tr>
                                 {% for threshold in monitored_property.thresholds %}
                                     <tr>
                                         <td></td>
                                         <td>
-                                            {{ threshold.value }}
-                                        </td>
-                                        <td>
-                                            {{ threshold.max_cons_abnormal_probes }}
-                                        </td>
-                                        <td>
+                                            <strong>IF EVALUE OF EACH
+                                                OF</strong> {{ threshold.max_cons_abnormal_probes }}
+                                            <strong> CONSECUTIVE PROBES</strong>
+                                            {{ threshold.is_gt_as_string }} {{ threshold.value }}
+                                            <strong> THEN </strong>
                                             {{ threshold.type_as_string }}
+                                            <strong>WITH MESSAGE TEMPLATE</strong> "{{ threshold.message_template }}"
                                         </td>
                                         <td>
-                                            <form method="post"
+                                            <button class="btn btn-xs float-left"
+                                                    value="edit_threshold" name="edit_threshold">
+                                                <span class="glyphicon glyphicon-wrench"></span>
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <form class="inline_form" method="post"
                                                   action="{% url "aps:ThresholdConfiguration" %}">
                                                 {% csrf_token %}
                                                 <input type="hidden" value="{{ threshold.pk }}"
@@ -202,7 +201,7 @@
                                                        name="client_pk"/>
                                                 <button type="submit" class="btn btn-xs float-right"
                                                         value="delete_threshold" name="delete_threshold">
-                                                    <span class="glyphicon glyphicon-minus"></span>
+                                                    <span class="glyphicon glyphicon-remove"></span>
                                                 </button>
                                             </form>
                                         </td>

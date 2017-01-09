@@ -40,10 +40,10 @@ function create_chart(element_locator, data_arr, time, title, unit) {
                     axisClass: 'ct-axis-title',
                     offset: {
                         x: 0,
-                        y: 20
+                        y: 10
                     },
                     textAnchor: 'middle',
-                    flipTitle: true
+                    flipTitle: true,
                 }
             })
         ]

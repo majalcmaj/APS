@@ -1,8 +1,12 @@
 import logging
 
+from django.db import transaction
+from django.db.models.query_utils import Q
+from django.db.utils import IntegrityError
+
 from APS import settings
-from common.libs import RRDtoolManager
-from common.models import Client
+from common.libs import RRDtoolManager, ClientManager
+from common.models import Client, MonitoredProperty
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -64,7 +68,7 @@ def form_configuration_data_for_client(client):
         }
         return configuration
     else:
-        return None
+        return {}
 
 
 def ack_configuration_applied(client):
@@ -75,6 +79,36 @@ def ack_configuration_applied(client):
     """
     client.configuration_pending = False
     client.save()
+
+def configure_multiple(pks, consecutive_probes, monitoring_timespan,
+                       monitored_properties,property_for_dashboard):
+    with transaction.atomic():
+        try:
+            clients = ClientManager.get_clients_list(pks)
+            mp_to_apply = MonitoredProperty.objects.filter(
+                pk__in=monitored_properties).values_list("name", "type")
+
+            if len(clients) == 0:
+                return
+            for cl in clients:
+                cl.consecutive_probes_sent_count=consecutive_probes
+                cl.monitoring_timespan = monitoring_timespan
+                for m in cl.monitored_properties.all():
+                    m.monitored = True if (m.name, m.type) in mp_to_apply else False
+                    m.save()
+                if property_for_dashboard is not None:
+                    mp_from_form=MonitoredProperty.objects.get(pk=property_for_dashboard)
+                    cl.property_on_dashboard = cl.monitored_properties.get(
+                        name=mp_from_form.name, type=mp_from_form.type
+                    )
+                else:
+                    cl.property_on_dashboard=None
+                cl.is_configured = True
+                cl.configuration_pending = True
+                cl.save()
+                RRDtoolManager.create_rrd(cl)
+        except BaseException as e:
+            raise AttributeError("Given settings are not applicable ({})".format(e))
 
 
 class ClientConfigurationException(BaseException):

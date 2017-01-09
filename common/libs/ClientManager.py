@@ -1,5 +1,8 @@
 import re
 
+from django.db.models.aggregates import Count
+from django.db.models.query_utils import Q
+
 from common.models import ClientBase, Client, PendingClient, BlockedClient
 
 """
@@ -64,8 +67,30 @@ def get_clients(filter_regex="", sort_ascending=True):
         clients = Client.objects.filter(hostname__iregex=filter_regex)
     else:
         clients = Client.objects.all()
-
     return clients.order_by("-hostname" if sort_ascending else "hostname")
+
+
+def get_clients_with_same_properties(pk):
+    """
+    Finds clients having exactly the same set of monitored properties as
+    client with given pk.
+    :param pk: public key of the client
+    :return: iterable with fount clients
+    """
+    try:
+        client = Client.objects.get(pk=pk)
+        mp_count = client.monitored_properties.count()
+        if mp_count == 0:
+            return []
+        # Make sure that mp's are the same - and client does not have more of them
+        clients_queryset = Client.objects.annotate(
+            mp_count=Count('monitored_properties')).filter(mp_count=mp_count)
+        for mp in client.monitored_properties.all():
+            clients_queryset = clients_queryset.filter(
+                Q(monitored_properties__name=mp.name) & Q(monitored_properties__type=mp.type))
+        return clients_queryset
+    except Client.DoesNotExist:
+        raise AttributeError("Client with PK %d does not exits" % pk)
 
 
 def get_monitored_properties(client):
@@ -88,3 +113,16 @@ def remove_client_anystate(pk):
         return True
     except ClientBase.DoesNotExist:
         return False
+
+def get_clients_list(pks):
+    """
+    Returns iterable with clients with specified pks
+    :param pks: iterable of desired clients public keys.
+    :return: iterable collection of client (database querystet)
+    :raises: AttributeError when PKS is not iterable.
+    """
+    if hasattr(pks, '__iter__'):
+        return Client.objects.filter(pk__in=pks)
+    else:
+        return AttributeError("Pks should be iterable!")
+
