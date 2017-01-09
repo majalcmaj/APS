@@ -2,7 +2,8 @@ import signal
 import sys
 import os
 import logging
-from configuration.settings import LOGGING_BASE_FILE,LOGGING_TEMP_FILE
+from configuration.settings import LOGGING_BASE_FILE, LOGGING_TEMP_FILE
+
 
 class InterruptHandler:
     def __init__(self):
@@ -19,8 +20,8 @@ class InterruptHandler:
             if self.tcp_server is not None:
                 self.tcp_server.shutdown()
 
-            #saving log files
-            #logging.getLogger("aps").handlers[0].close()
+            # saving log files
+            # logging.getLogger("aps").handlers[0].close()
             if os.path.exists(LOGGING_BASE_FILE):
                 log = open(LOGGING_BASE_FILE, 'a')
                 if os.path.exists(LOGGING_TEMP_FILE):

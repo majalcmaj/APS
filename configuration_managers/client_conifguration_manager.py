@@ -3,16 +3,14 @@ import os
 
 from acquisition_layer import ServerCommunicator
 from configuration import settings
-from utils import utils
 
 LOGGER = logging.getLogger(settings.LOGGER_NAME)
 
 
 class ClientConfigurationManager:
-    __metaclass__ = utils.Singleton
-
-    def __init__(self):
+    def __init__(self, available_plugins):
         self._last_configuration = None
+        self._available_plugins = available_plugins
         self._key = None
         try:
             if os.path.isfile(settings.CLIENT_KEY_FILE):
@@ -26,7 +24,7 @@ class ClientConfigurationManager:
 
         if self._key is None:
             LOGGER.info("Attempting to register on a server...")
-            self._key = ServerCommunicator.register_client()
+            self._key = ServerCommunicator.register_client(available_plugins)
             assert self._key is not None, "Fatal error: key cannot be none!"
             self._save_client_key()
 
@@ -36,6 +34,10 @@ class ClientConfigurationManager:
     def key(self):
         return self._key
 
+    @property
+    def plugins_available(self):
+        return self._available_plugins
+
     def get_client_configuration_from_server(self):
         LOGGER.info("Acquiring configuration from server.")
         self._last_configuration = ServerCommunicator.get_client_configuration(self._key)
@@ -43,9 +45,6 @@ class ClientConfigurationManager:
     def __getitem__(self, item):
         return self._last_configuration[item]
 
-    def is_configured_by_server(self):
-        return self._last_configuration != {}
-
     def _save_client_key(self):
-        with open(settings.CLIENT_KEY_FILE, 'w') as file:
-            file.write(str(self._key))
+        with open(settings.CLIENT_KEY_FILE, 'w') as f:
+            f.write(str(self._key))

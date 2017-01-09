@@ -1,28 +1,14 @@
+import grp
 import hashlib
 import hmac
-import json
 import logging
-import os, pwd, grp
+import os
+import pwd
 import socket
 from logging.handlers import RotatingFileHandler
 
 from configuration import settings
 from configuration.settings import LOGGING_TEMP_FILE, DIGITAL_SIGNATURE_SECRET
-
-
-def read_from_pipe(pipe):
-    message = bytearray()
-    while True:
-        data = os.read(pipe, 1)
-        if data == b'\0':
-            return json.loads(str(message).decode("UTF-8"))
-        else:
-            message.append(data)
-
-
-def write_to_pipe(pipe, data):
-    data = json.dumps(data) + b'\0'
-    os.write(pipe, data.encode("UTF-8"))
 
 
 def drop_privileges(uid_name, gid_name):
@@ -33,17 +19,6 @@ def drop_privileges(uid_name, gid_name):
 
     os.setgid(running_gid)
     os.setuid(running_uid)
-
-
-def yes_no_prompt(question):
-    yes_options = ['yes', 'y', '']
-    print(question)
-    choice = input()
-
-    if choice.lower() in yes_options:
-        return True
-    else:
-        return False
 
 
 def get_hostname():
@@ -67,15 +42,6 @@ class MyRotatingHandler(RotatingFileHandler):
             os.rename(self.baseFilename, destiny_filename)
 
         self.stream = self._open()
-
-
-class Singleton(type):
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
 
 
 class CryptUtils:

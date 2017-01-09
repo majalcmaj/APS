@@ -3,22 +3,18 @@ import time
 
 from acquisition_layer import ServerCommunicator
 from configuration import settings
-from configuration_managers.client_conifguration_manager import ClientConfigurationManager
-from utils import utils
 
-LOGGER = logging.getLogger("aps")
+LOGGER = logging.getLogger(settings.LOGGER_NAME)
 
 
 class DataSender:
-    def __init__(self, key, command_pipe, result_pipe):
-        self._key = key
-        self.command_pipe = command_pipe
-        self.result_pipe = result_pipe
-
-        self._conf_mgr = ClientConfigurationManager()
+    def __init__(self, conf_mgr, pipe):
+        self._conf_mgr = conf_mgr
+        self._key = conf_mgr.key
+        self._pipe = pipe
 
     def start_sending_data(self):
-        parameters = self._conf_mgr['monitoring_parameters']
+        parameters = self._conf_mgr.plugins_available
         counter = int(self._conf_mgr['probing_interval'])
         aggregator = {}
         for p in parameters:
@@ -54,8 +50,8 @@ class DataSender:
 
                 else:
                     start_time = time.time()
-                    utils.write_to_pipe(self.command_pipe, parameters)
-                    status_data = utils.read_from_pipe(self.result_pipe)
+                    self._pipe.send(parameters)
+                    status_data = self._pipe.recv()
                     for k, v in status_data.items():
                         aggregator[k] += float(v)
 

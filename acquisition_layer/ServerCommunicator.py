@@ -10,7 +10,7 @@ from requests.exceptions import ConnectionError
 from configuration import settings
 from utils.utils import CryptUtils
 
-LOGGER = logging.getLogger("aps")
+LOGGER = logging.getLogger(settings.LOGGER_NAME)
 
 
 def send_monitoring_data(data):
@@ -63,10 +63,10 @@ def validate_client_identity(client_key):
     return False
 
 
-def register_client():
+def register_client(available_plugins):
     try:
         payload = {
-            "monitored_properties": settings.MONITORED_PROPERTIES,
+            "monitored_properties": available_plugins,
             "hostname": socket.gethostname(),
             "base_probing_interval": settings.BASE_PROBING_INTERVAL
         }
