@@ -19,8 +19,7 @@ def _send_message(mime_message):
 
     for email_address in settings.NOTIFIED_EMAILS:
         mime_message['To'] = email_address
-
-    server.send_message(mime_message)
+        server.send_message(mime_message)
 
     server.quit()
 
@@ -28,7 +27,7 @@ def _send_message(mime_message):
 def create_alert_simple_message(message):
     message_body = message
     message = MIMEText(message_body)
-    message['Subject'] = "ALERT"
+    message['Subject'] = "[APS] ALERT"
     message['From'] = settings.EMAIL_NOTIFICATION_LOGIN
 
     return message

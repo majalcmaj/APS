@@ -87,7 +87,7 @@ def client_configuration(request):
 
 @csrf_exempt
 def client_identity(request):
-    if request.method == "GET":
+    if request.method == "POST":
         if request.content_type == "aps/json":
             try:
                 digest, data = request.body.split(MESSAGE_DATA_DELIMITER)
@@ -108,7 +108,7 @@ def client_identity(request):
                                             data={"content": "Bad request format. Contact administrator for details"})
         else:
             return signed_json_response(status=415, data={"content": "Data sent must be of type 'aps/json'"})
-    elif request.method == "POST":
+    elif request.method == "GET":
         if request.content_type == "aps/json":
             try:
                 digest, data = request.body.split(MESSAGE_DATA_DELIMITER)

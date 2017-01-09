@@ -146,10 +146,14 @@ NOTIFIED_EMAILS = [
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {'format': '[%(asctime)s %(levelname)s \t]: %(message)s' }
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
             'level': 'INFO',
+            'formatter': 'verbose'
         },
     },
     'loggers': {
